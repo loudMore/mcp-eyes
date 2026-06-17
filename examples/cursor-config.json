@@ -1,0 +1,16 @@
+{
+  "mcp": {
+    "servers": {
+      "eyes": {
+        "command": "python",
+        "args": ["-m", "mcp_eyes"],
+        "env": {
+          "MCP_EYES_PROTOCOL": "openai",
+          "MCP_EYES_BASE_URL": "https://api.openai.com/v1",
+          "MCP_EYES_API_KEY": "sk-REPLACE",
+          "MCP_EYES_MODEL": "gpt-4o-mini"
+        }
+      }
+    }
+  }
+}

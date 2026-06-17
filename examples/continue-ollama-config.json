@@ -1,0 +1,20 @@
+{
+  "experimental": {
+    "modelContextProtocolServers": [
+      {
+        "name": "eyes",
+        "transport": {
+          "type": "stdio",
+          "command": "python",
+          "args": ["-m", "mcp_eyes"],
+          "env": {
+            "MCP_EYES_PROTOCOL": "openai",
+            "MCP_EYES_BASE_URL": "http://localhost:11434/v1",
+            "MCP_EYES_API_KEY": "ollama",
+            "MCP_EYES_MODEL": "qwen2-vl:7b"
+          }
+        }
+      }
+    ]
+  }
+}

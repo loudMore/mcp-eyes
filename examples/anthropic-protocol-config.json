@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "eyes": {
+      "command": "python",
+      "args": ["-m", "mcp_eyes"],
+      "env": {
+        "MCP_EYES_PROTOCOL": "anthropic",
+        "MCP_EYES_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding",
+        "MCP_EYES_API_KEY": "REPLACE_WITH_YOUR_KEY",
+        "MCP_EYES_MODEL": "doubao-seed-1-6-vision",
+        "MCP_EYES_ANTHROPIC_VERSION": "2023-06-01"
+      }
+    }
+  }
+}
