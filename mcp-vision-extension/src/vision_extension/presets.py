@@ -2,7 +2,7 @@
 name (what the user types: 'doubao' / 'openai' / 'qwen') to a concrete
 (protocol, base_url, default_model, key_format_hint) tuple.
 
-When the user asks an agent to install mcp-eyes, the agent reads this list,
+When the user asks an agent to install vision-extension, the agent reads this list,
 asks the user "which provider?", asks for the API key, and writes .mcp.json.
 No protocol or URL trivia leaks into the conversation.
 

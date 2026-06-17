@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import httpx
 
-from mcp_eyes.image_utils import to_base64
-from mcp_eyes.providers.base import ImagePart, VisionProvider
+from vision_extension.image_utils import to_base64
+from vision_extension.providers.base import ImagePart, VisionProvider
 
 
 class AnthropicProvider(VisionProvider):
@@ -40,7 +40,7 @@ class AnthropicProvider(VisionProvider):
             "x-api-key": self.cfg.api_key,
             "Authorization": f"Bearer {self.cfg.api_key}",
             "Content-Type": "application/json",
-            "User-Agent": "mcp-eyes/0.1",
+            "User-Agent": "vision-extension/0.1",
             **self.cfg.extra_headers,
         }
         url = f"{self.cfg.base_url}/messages"

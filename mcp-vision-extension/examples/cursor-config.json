@@ -1,14 +1,14 @@
 {
   "mcp": {
     "servers": {
-      "eyes": {
+      "vision-extension": {
         "command": "python",
-        "args": ["-m", "mcp_eyes"],
+        "args": ["-m", "vision_extension"],
         "env": {
-          "MCP_EYES_PROTOCOL": "openai",
-          "MCP_EYES_BASE_URL": "https://api.openai.com/v1",
-          "MCP_EYES_API_KEY": "sk-REPLACE",
-          "MCP_EYES_MODEL": "gpt-4o-mini"
+          "VISION_EXTENSION_PROTOCOL": "openai",
+          "VISION_EXTENSION_BASE_URL": "https://api.openai.com/v1",
+          "VISION_EXTENSION_API_KEY": "sk-REPLACE",
+          "VISION_EXTENSION_MODEL": "gpt-4o-mini"
         }
       }
     }

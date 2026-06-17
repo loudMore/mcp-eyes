@@ -26,12 +26,12 @@ mkdir -p .claude/skills && cp -r vision-extension .claude/skills/
 
 ## What the skill does
 
-The single `vision-extension` skill covers the full mcp-eyes lifecycle:
+The single `vision-extension` skill covers the full vision-extension lifecycle:
 
-- **Install & configure** — triggered by *"install vision-extension"* / *"install mcp-eyes"* / pasting the GitHub URL → walks the agent through the deterministic 7-step CLI install. The user only provides the vision API key.
-- **Daily use** — triggered any time the agent is about to call `mcp__eyes__*` tools or the user sends an image path → teaches the reasoning model how to talk to the eyes-only vision model effectively, including persona-specific patterns for game devs, frontend devs, designers, data analysts, DevOps, QA, educators, hardware/makers, localization, researchers, PM/business.
+- **Install & configure** — triggered by *"install vision-extension"* / *"install vision-extension"* / pasting the GitHub URL → walks the agent through the deterministic 7-step CLI install. The user only provides the vision API key.
+- **Daily use** — triggered any time the agent is about to call `mcp__vision-extension__*` tools or the user sends an image path → teaches the reasoning model how to talk to the describe-only vision model effectively, including persona-specific patterns for game devs, frontend devs, designers, data analysts, DevOps, QA, educators, hardware/makers, localization, researchers, PM/business.
 
-Without this skill, an agent installing mcp-eyes for the first time tends to hand-write JSON (typos), miss steps, or use vague `question` strings the eyes-only vision model will refuse. With the skill, the entire flow is deterministic.
+Without this skill, an agent installing vision-extension for the first time tends to hand-write JSON (typos), miss steps, or use vague `question` strings the describe-only vision model will refuse. With the skill, the entire flow is deterministic.
 
 ## Authoring notes
 

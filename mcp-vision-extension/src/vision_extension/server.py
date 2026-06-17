@@ -2,7 +2,7 @@
 
 Exposes three tools: describe_image, compare_images, extract_text.
 The reasoning model that calls these tools never sees the raw bytes —
-only the structured text the vision model produces under the eyes-only protocol.
+only the structured text the vision model produces under the describe-only protocol.
 """
 
 from __future__ import annotations
@@ -15,16 +15,16 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-from mcp_eyes import __version__
-from mcp_eyes.config import Config
-from mcp_eyes.image_utils import load_image
-from mcp_eyes.prompts import SCENES, build_prompt, detect_lang
-from mcp_eyes.providers import make_provider
-from mcp_eyes.providers.base import ImagePart
+from vision_extension import __version__
+from vision_extension.config import Config
+from vision_extension.image_utils import load_image
+from vision_extension.prompts import SCENES, build_prompt, detect_lang
+from vision_extension.providers import make_provider
+from vision_extension.providers.base import ImagePart
 
 
 def _log(msg: str) -> None:
-    sys.stderr.write(f"[mcp-eyes] {msg}\n")
+    sys.stderr.write(f"[vision-extension] {msg}\n")
     sys.stderr.flush()
 
 
@@ -86,7 +86,7 @@ TOOLS = [
         "name": "describe_image",
         "description": (
             "Describe a local image or URL using a vision model that's locked to "
-            "EYES-ONLY mode (no advice, no reasoning, no opinions — pure objective "
+            "DESCRIBE-ONLY mode (no advice, no reasoning, no opinions — pure objective "
             "description). Use this whenever the user references an image, screenshot, "
             "diagram, error dialog, UI mockup, code screenshot, or game frame. "
             "Returns structured text the calling reasoning model can analyze."
@@ -122,7 +122,7 @@ TOOLS = [
         "description": (
             "Send multiple images to the vision model in a single call to compare them. "
             "Use for before/after, diff screenshots, or any multi-image question. The "
-            "vision model still operates in eyes-only mode."
+            "vision model still operates in describe-only mode."
         ),
         "inputSchema": {
             "type": "object",
@@ -265,7 +265,7 @@ def _handle_request(cfg: Config, req: dict) -> None:
             {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "mcp-eyes", "version": __version__},
+                "serverInfo": {"name": "vision-extension", "version": __version__},
             },
         )
         return

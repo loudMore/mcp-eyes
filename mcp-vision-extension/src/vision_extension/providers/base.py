@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from mcp_eyes.config import Config
+from vision_extension.config import Config
 
 
 @dataclass(frozen=True)

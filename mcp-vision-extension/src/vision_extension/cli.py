@@ -1,4 +1,4 @@
-"""Consolidated CLI for mcp-eyes.
+"""Consolidated CLI for vision-extension.
 
 Subcommands:
 - init      : print/write a CLAUDE.md / AGENTS.md snippet for the project
@@ -17,8 +17,8 @@ import sys
 import time
 from pathlib import Path
 
-from mcp_eyes import __version__
-from mcp_eyes.presets import (
+from vision_extension import __version__
+from vision_extension.presets import (
     PRESETS,
     Preset,
     all_presets_dict,
@@ -29,11 +29,11 @@ from mcp_eyes.presets import (
 
 # --------------------------- init ---------------------------
 
-TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
+TEMPLATE_ZH = """## 视觉识图 (vision-extension)
 
 **主模型{reasoning_clause}是纯文本推理模型，无法直接识别图片。**
 
-本项目通过 MCP server `eyes`（[mcp-eyes](https://github.com/loudMore/vision-extension)）把视觉能力外挂给主模型。当前后端配置：
+本项目通过 MCP server `vision-extension`（[vision-extension](https://github.com/loudMore/vision-extension)）把视觉能力外挂给主模型。当前后端配置：
 
 - 协议：`{protocol}`
 - 视觉模型：`{vision_model}`
@@ -43,16 +43,16 @@ TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
 
 ### 三个工具
 
-- `mcp__eyes__describe_image(image, question?, scene?)` — 单图结构化描述
-- `mcp__eyes__compare_images(images[], question?)` — 多图对比
-- `mcp__eyes__extract_text(image)` — 纯 OCR
+- `mcp__vision-extension__describe_image(image, question?, scene?)` — 单图结构化描述
+- `mcp__vision-extension__compare_images(images[], question?)` — 多图对比
+- `mcp__vision-extension__extract_text(image)` — 纯 OCR
 
 ### 必须知道的几条
 
-1. **遇到任何图片路径或图片 URL（.png/.jpg/.jpeg/.webp/.gif/.bmp），必须调用 mcp-eyes**，不要用 Read 工具读图（图片字节流给纯文本模型必出错）。
+1. **遇到任何图片路径或图片 URL（.png/.jpg/.jpeg/.webp/.gif/.bmp），必须调用 vision-extension**，不要用 Read 工具读图（图片字节流给纯文本模型必出错）。
 2. **路径用绝对路径，正斜杠也吃**（`C:/Users/.../foo.png`）。
-3. **视觉模型已在服务端被锁成 "eyes-only"**：不会给修复建议、不会推测原因、不会反问 —— 只做客观描述和逐字转录。推理、诊断、修复方案都由主模型来做，不要让视觉模型回答 "为什么 / 怎么修 / 哪里有问题"。
-4. **`scene` 参数怎么选**：默认 `auto` 按问题关键词识别。手动可选 `general / annotated / ui / mockup / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`。
+3. **视觉模型已在服务端被锁成 "describe-only"**：不会给修复建议、不会推测原因、不会反问 —— 只做客观描述和逐字转录。推理、诊断、修复方案都由主模型来做，不要让视觉模型回答 "为什么 / 怎么修 / 哪里有问题"。
+4. **`scene` 参数怎么选**：默认 `auto` 按问题关键词识别。手动可选 `general / annotated / ui / mockup / error / code / game / webpage / chat / terminal / diagram / comparison / table / chart / handwriting / lowquality / ocr`。
 5. **`question` 怎么写**：问"看到什么"，别问"该怎么办"。
    - 好：「逐字转录报错堆栈，含文件路径和行号」
    - 好：「图中红圈圈出的是什么？」
@@ -64,11 +64,11 @@ TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
 同一张图 + 同一个 `question` + 同一个 `scene` + 同一个模型 = 命中本地缓存，零成本。要强制重调用传 `bypass_cache: true`。
 """
 
-TEMPLATE_EN = """## Vision via mcp-eyes
+TEMPLATE_EN = """## Vision via vision-extension
 
 **The reasoning model{reasoning_clause} is text-only and cannot see images.**
 
-This project exposes vision capability through the `eyes` MCP server ([mcp-eyes](https://github.com/loudMore/vision-extension)). Current backend:
+This project exposes vision capability through the `vision-extension` MCP server ([vision-extension](https://github.com/loudMore/vision-extension)). Current backend:
 
 - Protocol: `{protocol}`
 - Vision model: `{vision_model}`
@@ -78,16 +78,16 @@ Concrete values live in `.mcp.json` env vars. Swapping the vision model is confi
 
 ### Tools
 
-- `mcp__eyes__describe_image(image, question?, scene?)` — single-image structured description
-- `mcp__eyes__compare_images(images[], question?)` — multi-image comparison
-- `mcp__eyes__extract_text(image)` — pure OCR
+- `mcp__vision-extension__describe_image(image, question?, scene?)` — single-image structured description
+- `mcp__vision-extension__compare_images(images[], question?)` — multi-image comparison
+- `mcp__vision-extension__extract_text(image)` — pure OCR
 
 ### Rules
 
-1. **Whenever a local image path or http(s) image URL appears (.png/.jpg/.jpeg/.webp/.gif/.bmp), call mcp-eyes.** Never use Read on image bytes — that breaks the text model.
+1. **Whenever a local image path or http(s) image URL appears (.png/.jpg/.jpeg/.webp/.gif/.bmp), call vision-extension.** Never use Read on image bytes — that breaks the text model.
 2. **Use absolute paths; forward slashes are fine** (`C:/Users/.../foo.png` on Windows).
-3. **The vision model is locked into eyes-only mode** server-side: no advice, no opinions, no speculation, no follow-up questions — just verbatim transcription and structured description. Reasoning, diagnosis, and fix suggestions are the reasoning model's job. Never ask the vision model "why" or "how to fix".
-4. **Picking `scene`**: default `auto` keyword-detects. Override with one of `general / annotated / ui / mockup / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`.
+3. **The vision model is locked into describe-only mode** server-side: no advice, no opinions, no speculation, no follow-up questions — just verbatim transcription and structured description. Reasoning, diagnosis, and fix suggestions are the reasoning model's job. Never ask the vision model "why" or "how to fix".
+4. **Picking `scene`**: default `auto` keyword-detects. Override with one of `general / annotated / ui / mockup / error / code / game / webpage / chat / terminal / diagram / comparison / table / chart / handwriting / lowquality / ocr`.
 5. **Writing `question`**: ask what's visible, not what to do.
    - Good: "Transcribe the stack trace verbatim, including file paths and line numbers."
    - Good: "What does the red-circled element show?"
@@ -124,9 +124,9 @@ def cmd_init(args: argparse.Namespace) -> int:
         reasoning_clause = ""
     snippet = template.format(
         reasoning_clause=reasoning_clause,
-        protocol=os.environ.get("MCP_EYES_PROTOCOL", "<not-set>"),
-        vision_model=os.environ.get("MCP_EYES_MODEL", "<not-set>"),
-        base_url=os.environ.get("MCP_EYES_BASE_URL", "<not-set>"),
+        protocol=os.environ.get("VISION_EXTENSION_PROTOCOL", "<not-set>"),
+        vision_model=os.environ.get("VISION_EXTENSION_MODEL", "<not-set>"),
+        base_url=os.environ.get("VISION_EXTENSION_BASE_URL", "<not-set>"),
     )
     if args.out == "-":
         _safe_print(snippet)
@@ -160,13 +160,13 @@ def cmd_presets(args: argparse.Namespace) -> int:
 
 def _build_config_from_preset(preset: Preset, api_key: str, model_override: str | None) -> dict:
     return {
-        "MCP_EYES_PROTOCOL": preset.protocol,
-        "MCP_EYES_BASE_URL": preset.base_url,
-        "MCP_EYES_API_KEY": api_key,
-        "MCP_EYES_MODEL": model_override or preset.default_model,
-        "MCP_EYES_LANG": "auto",
-        "MCP_EYES_MAX_IMAGE_DIM": "2048",
-        "MCP_EYES_CACHE_ENABLED": "true",
+        "VISION_EXTENSION_PROTOCOL": preset.protocol,
+        "VISION_EXTENSION_BASE_URL": preset.base_url,
+        "VISION_EXTENSION_API_KEY": api_key,
+        "VISION_EXTENSION_MODEL": model_override or preset.default_model,
+        "VISION_EXTENSION_LANG": "auto",
+        "VISION_EXTENSION_MAX_IMAGE_DIM": "2048",
+        "VISION_EXTENSION_CACHE_ENABLED": "true",
     }
 
 
@@ -176,13 +176,13 @@ def _build_config_from_flags(args: argparse.Namespace) -> dict:
     if not args.model:
         raise SystemExit("error: --model is required when --preset is not given")
     return {
-        "MCP_EYES_PROTOCOL": args.protocol,
-        "MCP_EYES_BASE_URL": args.base_url,
-        "MCP_EYES_API_KEY": args.api_key,
-        "MCP_EYES_MODEL": args.model,
-        "MCP_EYES_LANG": "auto",
-        "MCP_EYES_MAX_IMAGE_DIM": "2048",
-        "MCP_EYES_CACHE_ENABLED": "true",
+        "VISION_EXTENSION_PROTOCOL": args.protocol,
+        "VISION_EXTENSION_BASE_URL": args.base_url,
+        "VISION_EXTENSION_API_KEY": args.api_key,
+        "VISION_EXTENSION_MODEL": args.model,
+        "VISION_EXTENSION_LANG": "auto",
+        "VISION_EXTENSION_MAX_IMAGE_DIM": "2048",
+        "VISION_EXTENSION_CACHE_ENABLED": "true",
     }
 
 
@@ -194,7 +194,7 @@ def cmd_config(args: argparse.Namespace) -> int:
         preset = find_preset(args.preset)
         if not preset:
             raise SystemExit(
-                f"error: unknown preset {args.preset!r}. Run 'mcp-eyes presets' for the full list."
+                f"error: unknown preset {args.preset!r}. Run 'vision-extension presets' for the full list."
             )
         env = _build_config_from_preset(preset, args.api_key, args.model)
     else:
@@ -202,14 +202,14 @@ def cmd_config(args: argparse.Namespace) -> int:
 
     server_block = {
         "command": args.python or sys.executable,
-        "args": ["-m", "mcp_eyes"],
+        "args": ["-m", "vision_extension"],
         "env": env,
     }
 
     if args.server_name:
         full = {"mcpServers": {args.server_name: server_block}}
     else:
-        full = {"mcpServers": {"eyes": server_block}}
+        full = {"mcpServers": {"vision-extension": server_block}}
 
     out_text = json.dumps(full, indent=2, ensure_ascii=False)
 
@@ -233,20 +233,20 @@ def cmd_config(args: argparse.Namespace) -> int:
 # --------------------------- doctor ---------------------------
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    print(f"mcp-eyes {__version__} doctor")
+    print(f"vision-extension {__version__} doctor")
     print("=" * 50)
     ok = True
 
     # 1. env vars
     print("\n[1/4] environment variables")
-    required = ("MCP_EYES_PROTOCOL", "MCP_EYES_BASE_URL", "MCP_EYES_API_KEY", "MCP_EYES_MODEL")
+    required = ("VISION_EXTENSION_PROTOCOL", "VISION_EXTENSION_BASE_URL", "VISION_EXTENSION_API_KEY", "VISION_EXTENSION_MODEL")
     for k in required:
         v = os.environ.get(k, "")
         if not v:
             print(f"  MISSING  {k}")
             ok = False
         else:
-            shown = v if k != "MCP_EYES_API_KEY" else (v[:8] + "..." + v[-4:] if len(v) > 12 else "***")
+            shown = v if k != "VISION_EXTENSION_API_KEY" else (v[:8] + "..." + v[-4:] if len(v) > 12 else "***")
             print(f"  ok       {k}={shown}")
 
     # 2. dependencies
@@ -269,7 +269,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         print("  skip     fix env vars first")
     else:
         try:
-            from mcp_eyes.config import Config
+            from vision_extension.config import Config
 
             cfg = Config.from_env()
             print(f"  ok       protocol={cfg.protocol} model={cfg.model}")
@@ -288,11 +288,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
             print("  skip     no --image given (pass a small test image to verify the API works)")
         else:
             try:
-                from mcp_eyes.config import Config
-                from mcp_eyes.image_utils import load_image
-                from mcp_eyes.prompts import build_prompt
-                from mcp_eyes.providers import make_provider
-                from mcp_eyes.providers.base import ImagePart
+                from vision_extension.config import Config
+                from vision_extension.image_utils import load_image
+                from vision_extension.prompts import build_prompt
+                from vision_extension.providers import make_provider
+                from vision_extension.providers.base import ImagePart
 
                 cfg = Config.from_env()
                 t0 = time.time()
@@ -316,15 +316,15 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        prog="mcp-eyes",
-        description="mcp-eyes CLI: bootstrap, configure, and verify an mcp-eyes deployment.",
+        prog="vision-extension",
+        description="vision-extension CLI: bootstrap, configure, and verify an vision-extension deployment.",
     )
-    parser.add_argument("--version", action="version", version=f"mcp-eyes {__version__}")
+    parser.add_argument("--version", action="version", version=f"vision-extension {__version__}")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     # init
     p_init = sub.add_parser("init", help="Generate CLAUDE.md / AGENTS.md snippet for a project.")
-    p_init.add_argument("--reasoning-model", default="", help="Optional. The text reasoning model that calls mcp-eyes. The installing agent already knows its own model and can fill this in for a slightly more polished doc; leave blank for a model-agnostic snippet that works the same way.")
+    p_init.add_argument("--reasoning-model", default="", help="Optional. The text reasoning model that calls vision-extension. The installing agent already knows its own model and can fill this in for a slightly more polished doc; leave blank for a model-agnostic snippet that works the same way.")
     p_init.add_argument("--lang", choices=("zh", "en"), default="zh")
     p_init.add_argument("--out", default="-", help="Output path; '-' for stdout.")
     p_init.set_defaults(func=cmd_init)
@@ -336,19 +336,19 @@ def main(argv: list[str] | None = None) -> int:
 
     # config
     p_cfg = sub.add_parser("config", help="Generate a .mcp.json server entry.")
-    p_cfg.add_argument("--preset", help="Provider preset name (run 'mcp-eyes presets' to see all). If omitted, --protocol/--base-url/--model are required.")
+    p_cfg.add_argument("--preset", help="Provider preset name (run 'vision-extension presets' to see all). If omitted, --protocol/--base-url/--model are required.")
     p_cfg.add_argument("--api-key", required=True, help="Vision provider API key.")
     p_cfg.add_argument("--model", default="", help="Vision model identifier. With --preset, overrides the preset's default_model. Without --preset, this is required.")
     p_cfg.add_argument("--protocol", choices=("openai", "anthropic"), default="openai")
     p_cfg.add_argument("--base-url", default="", help="API base URL (no trailing /chat/completions or /messages).")
-    p_cfg.add_argument("--server-name", default="eyes", help="Key under mcpServers (default: eyes).")
+    p_cfg.add_argument("--server-name", default="vision-extension", help="Key under mcpServers (default: vision-extension).")
     p_cfg.add_argument("--python", default="", help="Python executable path to embed in the config (default: current interpreter).")
     p_cfg.add_argument("--out", default="-", help="Output path; '-' for stdout. Use a project-local .mcp.json or your client's config file.")
     p_cfg.add_argument("--merge", action="store_true", help="If --out exists, merge the new server entry into its mcpServers block instead of overwriting.")
     p_cfg.set_defaults(func=cmd_config)
 
     # doctor
-    p_doc = sub.add_parser("doctor", help="Self-check the current mcp-eyes setup.")
+    p_doc = sub.add_parser("doctor", help="Self-check the current vision-extension setup.")
     p_doc.add_argument("--image", default="", help="Optional path/URL to a small test image for a real API ping.")
     p_doc.add_argument("--skip-api", action="store_true", help="Skip the live API ping step.")
     p_doc.set_defaults(func=cmd_doctor)

@@ -31,30 +31,30 @@ class Config:
 
     @classmethod
     def from_env(cls) -> "Config":
-        protocol = os.environ.get("MCP_EYES_PROTOCOL", "openai").lower()
+        protocol = os.environ.get("VISION_EXTENSION_PROTOCOL", "openai").lower()
         if protocol not in ("openai", "anthropic"):
             raise RuntimeError(
-                f"MCP_EYES_PROTOCOL must be 'openai' or 'anthropic', got {protocol!r}"
+                f"VISION_EXTENSION_PROTOCOL must be 'openai' or 'anthropic', got {protocol!r}"
             )
 
-        base_url = os.environ.get("MCP_EYES_BASE_URL", "").rstrip("/")
-        api_key = os.environ.get("MCP_EYES_API_KEY", "")
-        model = os.environ.get("MCP_EYES_MODEL", "")
+        base_url = os.environ.get("VISION_EXTENSION_BASE_URL", "").rstrip("/")
+        api_key = os.environ.get("VISION_EXTENSION_API_KEY", "")
+        model = os.environ.get("VISION_EXTENSION_MODEL", "")
 
         if not base_url:
-            raise RuntimeError("MCP_EYES_BASE_URL is required")
+            raise RuntimeError("VISION_EXTENSION_BASE_URL is required")
         if not api_key:
-            raise RuntimeError("MCP_EYES_API_KEY is required")
+            raise RuntimeError("VISION_EXTENSION_API_KEY is required")
         if not model:
-            raise RuntimeError("MCP_EYES_MODEL is required")
+            raise RuntimeError("VISION_EXTENSION_MODEL is required")
 
-        lang = os.environ.get("MCP_EYES_LANG", "auto").lower()
+        lang = os.environ.get("VISION_EXTENSION_LANG", "auto").lower()
         if lang not in ("auto", "en", "zh"):
-            raise RuntimeError(f"MCP_EYES_LANG must be auto/en/zh, got {lang!r}")
+            raise RuntimeError(f"VISION_EXTENSION_LANG must be auto/en/zh, got {lang!r}")
 
         extra_headers: dict[str, str] = {}
         if protocol == "anthropic":
-            version = os.environ.get("MCP_EYES_ANTHROPIC_VERSION", "2023-06-01")
+            version = os.environ.get("VISION_EXTENSION_ANTHROPIC_VERSION", "2023-06-01")
             extra_headers["anthropic-version"] = version
 
         return cls(
@@ -62,16 +62,16 @@ class Config:
             base_url=base_url,
             api_key=api_key,
             model=model,
-            max_tokens=int(os.environ.get("MCP_EYES_MAX_TOKENS", "1536")),
-            temperature=float(os.environ.get("MCP_EYES_TEMPERATURE", "0.2")),
+            max_tokens=int(os.environ.get("VISION_EXTENSION_MAX_TOKENS", "1536")),
+            temperature=float(os.environ.get("VISION_EXTENSION_TEMPERATURE", "0.2")),
             lang=lang,  # type: ignore[arg-type]
-            max_image_dim=int(os.environ.get("MCP_EYES_MAX_IMAGE_DIM", "2048")),
-            cache_enabled=os.environ.get("MCP_EYES_CACHE_ENABLED", "true").lower()
+            max_image_dim=int(os.environ.get("VISION_EXTENSION_MAX_IMAGE_DIM", "2048")),
+            cache_enabled=os.environ.get("VISION_EXTENSION_CACHE_ENABLED", "true").lower()
             in ("1", "true", "yes"),
             cache_dir=os.environ.get(
-                "MCP_EYES_CACHE_DIR",
-                os.path.join(os.path.expanduser("~"), ".cache", "mcp-eyes"),
+                "VISION_EXTENSION_CACHE_DIR",
+                os.path.join(os.path.expanduser("~"), ".cache", "vision-extension"),
             ),
-            timeout=float(os.environ.get("MCP_EYES_TIMEOUT", "90")),
+            timeout=float(os.environ.get("VISION_EXTENSION_TIMEOUT", "90")),
             extra_headers=extra_headers,
         )

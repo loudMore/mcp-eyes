@@ -4,11 +4,11 @@
 
 ## What this repo is
 
-`mcp-eyes` is a Model Context Protocol (MCP) server. It gives **text-only reasoning LLMs** the ability to see images by routing them to a configured vision model. Crucially, the vision model is locked into description-only mode (the "eyes-only protocol"), so it does not produce advice, hypotheses, opinions, or solutions — only structured visual transcription. Higher-level reasoning is the calling model's job.
+`vision-extension` is a Model Context Protocol (MCP) server. It gives **text-only reasoning LLMs** the ability to see images by routing them to a configured vision model. Crucially, the vision model is locked into description-only mode (the "describe-only protocol"), so it does not produce advice, hypotheses, opinions, or solutions — only structured visual transcription. Higher-level reasoning is the calling model's job.
 
 ## When you (the agent) should call this server's tools
 
-You should invoke `mcp-eyes` tools whenever **any** of the following is true and the `eyes` MCP server is available:
+You should invoke `vision-extension` tools whenever **any** of the following is true and the `vision-extension` MCP server is available:
 
 1. The user message references a local image path (`.png .jpg .jpeg .webp .gif .bmp`).
 2. The user gives an `http(s)://` URL that resolves to an image.
@@ -107,25 +107,25 @@ Identical (image-bytes, model, full-prompt) tuples hit a local SHA-256-keyed cac
 
 ## Configuring the server (for human users)
 
-If `eyes` is not registered in the user's MCP client, point them at this repo's [README](README.md). All config is via environment variables; the only required ones are `MCP_EYES_PROTOCOL`, `MCP_EYES_BASE_URL`, `MCP_EYES_API_KEY`, `MCP_EYES_MODEL`.
+If `vision-extension` is not registered in the user's MCP client, point them at this repo's [README](README.md). All config is via environment variables; the only required ones are `VISION_EXTENSION_PROTOCOL`, `VISION_EXTENSION_BASE_URL`, `VISION_EXTENSION_API_KEY`, `VISION_EXTENSION_MODEL`.
 
-After wiring the MCP server, the user must run `python -m mcp_eyes init --reasoning-model "<their-text-model>"` once per project to generate a `CLAUDE.md` / `AGENTS.md` snippet. The init step matters because **the server cannot detect which reasoning model is calling it** — that's whatever text LLM hosts the agent (GLM, DeepSeek, Claude, GPT-4, Kimi, etc.). Without the init snippet pasted into the project's agent docs, downstream agents won't know the eyes-only contract.
+After wiring the MCP server, the user must run `python -m vision_extension init --reasoning-model "<their-text-model>"` once per project to generate a `CLAUDE.md` / `AGENTS.md` snippet. The init step matters because **the server cannot detect which reasoning model is calling it** — that's whatever text LLM hosts the agent (DeepSeek V4 Pro, GLM 5.2, Kimi K2, Qwen 3 Max, etc.). Without the init snippet pasted into the project's agent docs, downstream agents won't know the describe-only contract.
 
 ## Source map
 
 ```
-src/mcp_eyes/
+src/vision_extension/
 ├── server.py            # MCP JSON-RPC dispatch + tool definitions
 ├── config.py            # env var → Config dataclass
 ├── image_utils.py       # load (file or URL), resize via Pillow, base64
 ├── prompts.py           # role lock + format rules + 14 scene templates (en + zh)
-├── init_template.py     # `python -m mcp_eyes init` CLI for project bootstrap
+├── init_template.py     # `python -m vision_extension init` CLI for project bootstrap
 └── providers/
     ├── base.py
     ├── openai_compat.py    # /v1/chat/completions
     └── anthropic_compat.py # /v1/messages
 ```
 
-To add a new provider protocol, subclass `VisionProvider`, add it to `providers/__init__.py:make_provider`, and document the `MCP_EYES_PROTOCOL` value in the README.
+To add a new provider protocol, subclass `VisionProvider`, add it to `providers/__init__.py:make_provider`, and document the `VISION_EXTENSION_PROTOCOL` value in the README.
 
 To add a new scene, append to the `Scene` literal, add entries to `SCENES_EN` and `SCENES_ZH`, and update the keyword list in `detect_scene` if it should be auto-selectable.

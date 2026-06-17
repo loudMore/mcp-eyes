@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp-eyes"
+name = "vision-extension"
 version = "0.1.0"
-description = "Give text-only reasoning LLMs a pair of eyes. An MCP server that pairs any long-context reasoning model with any vision model, locked into description-only mode."
+description = "Give text-only reasoning LLMs vision capability. An MCP server that pairs any long-context reasoning model with any vision model, locked into description-only mode."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "mcp-eyes contributors" }]
+authors = [{ name = "vision-extension contributors" }]
 keywords = ["mcp", "vision", "llm", "claude", "anthropic", "openai", "multimodal"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -28,7 +28,7 @@ resize = ["Pillow>=10.0"]
 dev = ["pytest>=7", "ruff>=0.5"]
 
 [project.scripts]
-mcp-eyes = "mcp_eyes.server:main"
+vision-extension = "vision_extension.server:main"
 
 [project.urls]
 Homepage = "https://github.com/loudMore/vision-extension"

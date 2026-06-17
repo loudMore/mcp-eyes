@@ -73,7 +73,7 @@ def _maybe_resize(data: bytes, mime: str, max_dim: int) -> tuple[bytes, str]:
     if not HAS_PIL or max_dim <= 0:
         if len(data) > LARGE_IMAGE_BYTES and not HAS_PIL:
             print(
-                f"[mcp-eyes] warn: image is {len(data) // 1024} KB; install Pillow to auto-resize",
+                f"[vision-extension] warn: image is {len(data) // 1024} KB; install Pillow to auto-resize",
                 file=sys.stderr,
             )
         return data, mime
@@ -92,7 +92,7 @@ def _maybe_resize(data: bytes, mime: str, max_dim: int) -> tuple[bytes, str]:
         resized.save(buf, format=fmt, quality=88 if fmt == "JPEG" else None)
         return buf.getvalue(), f"image/{fmt.lower()}"
     except Exception as exc:
-        print(f"[mcp-eyes] warn: resize failed ({exc}); sending original", file=sys.stderr)
+        print(f"[vision-extension] warn: resize failed ({exc}); sending original", file=sys.stderr)
         return data, mime
 
 

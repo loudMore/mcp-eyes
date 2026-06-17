@@ -1,16 +1,16 @@
 {
   "mcpServers": {
-    "eyes": {
+    "vision-extension": {
       "command": "python",
-      "args": ["-m", "mcp_eyes"],
+      "args": ["-m", "vision_extension"],
       "env": {
-        "MCP_EYES_PROTOCOL": "openai",
-        "MCP_EYES_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding/v3",
-        "MCP_EYES_API_KEY": "REPLACE_WITH_YOUR_KEY",
-        "MCP_EYES_MODEL": "doubao-seed-2.0-pro",
-        "MCP_EYES_LANG": "auto",
-        "MCP_EYES_MAX_IMAGE_DIM": "2048",
-        "MCP_EYES_CACHE_ENABLED": "true"
+        "VISION_EXTENSION_PROTOCOL": "openai",
+        "VISION_EXTENSION_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding/v3",
+        "VISION_EXTENSION_API_KEY": "REPLACE_WITH_YOUR_KEY",
+        "VISION_EXTENSION_MODEL": "doubao-seed-2.0-pro",
+        "VISION_EXTENSION_LANG": "auto",
+        "VISION_EXTENSION_MAX_IMAGE_DIM": "2048",
+        "VISION_EXTENSION_CACHE_ENABLED": "true"
       }
     }
   }

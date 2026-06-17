@@ -1,14 +1,14 @@
 {
   "mcpServers": {
-    "eyes": {
+    "vision-extension": {
       "command": "python",
-      "args": ["-m", "mcp_eyes"],
+      "args": ["-m", "vision_extension"],
       "env": {
-        "MCP_EYES_PROTOCOL": "anthropic",
-        "MCP_EYES_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding",
-        "MCP_EYES_API_KEY": "REPLACE_WITH_YOUR_KEY",
-        "MCP_EYES_MODEL": "doubao-seed-1-6-vision",
-        "MCP_EYES_ANTHROPIC_VERSION": "2023-06-01"
+        "VISION_EXTENSION_PROTOCOL": "anthropic",
+        "VISION_EXTENSION_BASE_URL": "https://ark.cn-beijing.volces.com/api/coding",
+        "VISION_EXTENSION_API_KEY": "REPLACE_WITH_YOUR_KEY",
+        "VISION_EXTENSION_MODEL": "doubao-seed-1-6-vision",
+        "VISION_EXTENSION_ANTHROPIC_VERSION": "2023-06-01"
       }
     }
   }
