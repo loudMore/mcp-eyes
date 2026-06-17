@@ -31,8 +31,8 @@ dev = ["pytest>=7", "ruff>=0.5"]
 mcp-eyes = "mcp_eyes.server:main"
 
 [project.urls]
-Homepage = "https://github.com/loudMore/mcp-eyes"
-Issues = "https://github.com/loudMore/mcp-eyes/issues"
+Homepage = "https://github.com/loudMore/vision-extension"
+Issues = "https://github.com/loudMore/vision-extension/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

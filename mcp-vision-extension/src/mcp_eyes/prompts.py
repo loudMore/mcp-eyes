@@ -25,6 +25,8 @@ Scene = Literal[
     "diagram",
     "comparison",
     "table",
+    "chart",
+    "handwriting",
     "lowquality",
     "ocr",
 ]
@@ -32,7 +34,7 @@ Scene = Literal[
 SCENES: tuple[Scene, ...] = (
     "auto", "general", "annotated", "ui", "mockup", "error", "code", "game",
     "webpage", "chat", "terminal", "diagram", "comparison", "table",
-    "lowquality", "ocr",
+    "chart", "handwriting", "lowquality", "ocr",
 )
 
 
@@ -99,6 +101,8 @@ SCENES_EN: dict[str, str] = {
     "diagram": "This is a diagram. Steps: (1) diagram type (flowchart / architecture / wireframe / mindmap); (2) all node / box text VERBATIM; (3) edges between nodes — direction and any labels on them; (4) group / region titles; (5) legend; (6) overall flow direction.",
     "comparison": "This is a comparison image (split layout). Steps: (1) split direction (horizontal / vertical / grid); (2) describe EACH SIDE separately; (3) list differences between sides ranked by significance (position, color, text, layout).",
     "table": "This is a table screenshot. Steps: (1) header row VERBATIM; (2) transcribe ALL cells row by row as a Markdown table; (3) flag highlighted / bold / colored cells; (4) keep total rows and empty cells.",
+    "chart": "This is a chart, plot, dashboard panel, or data-visualization screenshot (matplotlib, Grafana, Tableau, Excel, Power BI, etc.). Produce a faithful structured description: (1) chart type (line / bar / scatter / pie / heatmap / candlestick / box / histogram / sankey / etc.) and orientation; (2) chart title and subtitle VERBATIM; (3) X-axis label, unit, scale (linear/log), full tick value list; (4) Y-axis label, unit, scale, full tick value list; (5) every data series — name from legend VERBATIM, color, line/marker style; (6) for each series, list its values at every tick if readable, else its overall trend (rising / falling / U-shape) plus min, max, and any obvious inflection points; (7) annotations on the chart (callouts, arrows, threshold lines); (8) for dashboards, list every panel's title and the headline number/state visible. Goal: a downstream model could plot the same data or interpret the trend without seeing the image.",
+    "handwriting": "This is handwritten content — notes, mathematical equations, whiteboard scribbles, journal pages, sketched diagrams. Steps: (1) overall layout (single page / multi-column / spread); (2) transcribe all handwritten text VERBATIM — preserve line breaks, indentation, bullet markers, and any strikethroughs or underlines; (3) for math: transcribe equations using LaTeX notation; (4) for diagrams: describe shapes, arrows, and labels with their positions; (5) note ambiguous characters as '(possibly X or Y)' rather than guessing; (6) note any printed/typed text mixed in separately. Do NOT clean up or correct the handwriting — preserve original wording even if misspelled.",
     "lowquality": "Image quality is poor. Steps: (1) identify what is visible, mark uncertain content with '(uncertain)'; (2) state which regions are unreadable due to blur / glare / darkness / compression; (3) DO NOT fabricate details to seem complete.",
     "ocr": "Pure OCR. Transcribe every visible character VERBATIM, preserving line breaks, columns, and reading order. Do not summarize or interpret. Mark unreadable regions as '[unreadable]'.",
 }
@@ -148,6 +152,8 @@ SCENES_ZH: dict[str, str] = {
     "diagram": "这是设计稿/流程图。请：(1) 图表类型（流程图/架构图/UI 原型/思维导图）；(2) 所有节点/方框的文字逐字转录；(3) 节点之间的连线方向、连线上的文字标签；(4) 分组/分区的标题；(5) 图例说明；(6) 整体逻辑走向。",
     "comparison": "这是对比图（分屏）。请：(1) 判断分屏方式（左右/上下/网格）；(2) 分别描述每一边的内容；(3) 列出两边的差异点（位置、颜色、文字、布局），按重要性排序。",
     "table": "这是表格/数据截图。请：(1) 表头逐字；(2) 按行列结构转录所有单元格内容（用 Markdown 表格输出）；(3) 高亮/加粗/标红的单元格特别标出；(4) 合计行、空单元格也保留。",
+    "chart": "这是图表/数据可视化/仪表盘面板（matplotlib、Grafana、Tableau、Excel、Power BI 等）。请输出忠实的结构化描述：(1) 图表类型（折线/柱状/散点/饼/热力/K线/箱线/直方/桑基 等）和方向；(2) 图表标题和副标题逐字；(3) X 轴标签、单位、刻度类型（线性/对数）、完整刻度值列表；(4) Y 轴标签、单位、刻度类型、完整刻度值列表；(5) 每条数据系列——图例名称逐字、颜色、线型/标记样式；(6) 每条系列：能看清就列出每个刻度上的值，看不清就描述整体走势（上升/下降/U 型）+ 最大值、最小值、明显拐点；(7) 图上的标注（指引线、箭头、阈值线）；(8) 仪表盘则列出每个面板的标题和显眼的数字/状态。目标：下游模型仅凭描述就能复现同样的数据图或解读趋势。",
+    "handwriting": "这是手写内容——笔记、数学公式、白板涂鸦、手账、手绘示意图。请：(1) 整体布局（单页/多栏/双开）；(2) 所有手写文字逐字转录——保留换行、缩进、列表标记、删除线和下划线；(3) 数学公式用 LaTeX 表示；(4) 示意图描述形状、箭头、标签及其位置；(5) 模糊的字符标注为「（可能是 X 或 Y）」，不要瞎猜；(6) 混在一起的印刷/键盘文字单独列出。**不要**帮忙修正手写内容——即使有错别字也保留原貌。",
     "lowquality": "图片质量较差，请：(1) 尽量识别可见内容，不确定的标'（不确定）'；(2) 说明哪些区域因模糊/反光/过暗/压缩无法识别；(3) 不要为了看起来完整而编造内容。",
     "ocr": "纯 OCR。逐字转录图中所有文本，保留换行、列结构和阅读顺序。不要总结、不要解释。无法识别的区域标注 '[无法识别]'。",
 }
@@ -171,6 +177,8 @@ def detect_scene(question: str) -> str:
         (("annotat", "circle", "arrow", "highlight", "标注", "圈", "箭头", "高亮", "划线"), "annotated"),
         (("mockup", "wireframe", "sketch", "prototype", "blueprint", "draft", "reproduce", "rebuild", "implement", "草图", "线框", "原型", "设计稿", "白板", "复刻", "实现", "照着做", "做出来"), "mockup"),
         (("error", "stack", "traceback", "exception", "报错", "异常", "堆栈"), "error"),
+        (("chart", "graph", "plot", "dashboard", "grafana", "tableau", "图表", "曲线", "柱状", "散点", "饼图", "热力", "仪表盘", "看板"), "chart"),
+        (("handwriting", "handwritten", "whiteboard", "notebook", "equation", "latex", "手写", "手稿", "笔记", "白板", "公式", "草稿"), "handwriting"),
         (("code", "function", "代码", "源码", "函数"), "code"),
         (("terminal", "console", "shell", "终端", "控制台", "命令行"), "terminal"),
         (("table", "spreadsheet", "表格", "excel"), "table"),

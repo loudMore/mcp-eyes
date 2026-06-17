@@ -1,11 +1,16 @@
 ---
-name: mcp-eyes
-description: Use this skill for ANY interaction with mcp-eyes — installing/configuring it, calling its tools (`mcp__eyes__describe_image`, `mcp__eyes__compare_images`, `mcp__eyes__extract_text`), or working through tasks where the user gives you a local image path or http(s) image URL while the `eyes` MCP server is available. Triggers include: "install mcp-eyes", "give you eyes / vision", pasting the github.com/loudMore/mcp-eyes URL, any image path (.png/.jpg/.jpeg/.webp/.gif/.bmp), screenshots, error dialogs, UI mockups, diagrams, code screenshots, game frames, annotated images, before/after pairs. The skill covers both the install playbook AND the day-to-day collaboration patterns between you (the reasoning model) and the eyes-only vision model — picking the right scene, writing question strings the vision model can answer, multi-image batching, cost/cache awareness, error recovery, and when NOT to call mcp-eyes.
+name: vision-extension
+description: Use this skill for ANY interaction with vision-extension (the open-source vision pack at github.com/loudMore/vision-extension, containing the mcp-eyes MCP server) — installing/configuring it, calling its tools (`mcp__eyes__describe_image`, `mcp__eyes__compare_images`, `mcp__eyes__extract_text`), or working through tasks where the user gives you a local image path or http(s) image URL while the `eyes` MCP server is available. Triggers include: "install vision-extension", "install mcp-eyes", "give you eyes / vision", pasting the github.com/loudMore/vision-extension URL, any image path (.png/.jpg/.jpeg/.webp/.gif/.bmp), screenshots, error dialogs, UI mockups, hand-drawn UI sketches, diagrams, charts/dashboards, code screenshots, game frames, annotated bug reports, before/after comparisons, handwritten notes or equations. The skill covers both the install playbook AND the day-to-day collaboration patterns between you (the reasoning model) and the eyes-only vision model — picking the right scene, writing question strings the vision model can answer, multi-image batching, cost/cache awareness, error recovery, persona-specific patterns (game devs, frontend, designers, data analysts, QA, educators), and when NOT to call mcp-eyes.
 ---
 
-# mcp-eyes — full lifecycle skill
+# vision-extension — full lifecycle skill
 
-mcp-eyes is an MCP server that gives **text-only reasoning models** (you) the ability to see images by routing them to a configured vision model. The vision model is locked into **description-only mode** server-side: it will not give advice, opinions, hypotheses, or follow-up questions. All thinking, diagnosis, and synthesis is **your** job.
+[`vision-extension`](https://github.com/loudMore/vision-extension) is a pack of two components:
+
+- **`mcp-vision-extension/`** — an MCP server (Python package `mcp_eyes`) that gives **text-only reasoning models** (you) the ability to see images via a configured vision model.
+- **`skills-vision-extension/`** — this skill itself, packaging install + daily-use rules.
+
+The vision model behind the MCP is locked into **description-only mode** server-side: it will not give advice, opinions, hypotheses, or follow-up questions. All thinking, diagnosis, and synthesis is **your** job.
 
 This skill covers everything from "user wants to install" to "user pastes their 100th screenshot today". Pick the relevant section.
 
@@ -13,19 +18,19 @@ This skill covers everything from "user wants to install" to "user pastes their 
 
 ## PART A — INSTALL & CONFIGURE
 
-Trigger phrases: *"install mcp-eyes"*, *"set up vision"*, *"give you eyes"*, pasting `github.com/loudMore/mcp-eyes`.
+Trigger phrases: *"install vision-extension"*, *"install mcp-eyes"*, *"set up vision"*, *"give you eyes"*, pasting `github.com/loudMore/vision-extension`.
 
 **You ARE the reasoning model that will call mcp-eyes** — you don't need to ask the user what model is calling. From the user, you only need: a **vision API key** (and optionally which provider).
 
 ### A.1 — install the package
 
 ```bash
-pip install git+https://github.com/loudMore/mcp-eyes.git
+pip install "git+https://github.com/loudMore/vision-extension.git#subdirectory=mcp-vision-extension"
 # Optional: include Pillow for auto-resize of large images
-pip install "mcp-eyes[resize] @ git+https://github.com/loudMore/mcp-eyes.git"
+pip install "vision-extension[resize] @ git+https://github.com/loudMore/vision-extension.git#subdirectory=mcp-vision-extension"
 ```
 
-Verify: `python -m mcp_eyes --version`.
+Verify: `python -m mcp_eyes --version`. (The Python package is `mcp_eyes` for ergonomic CLI: `python -m mcp_eyes init / presets / config / doctor`. The repo and directory are named `vision-extension` for clarity.)
 
 ### A.2 — pick a vision provider
 
@@ -140,6 +145,8 @@ Image input arrives:
 | Flowchart, architecture, wireframe (informational, not for reproduction) | `diagram` |
 | Side-by-side or before/after | `comparison` |
 | Spreadsheet / data table | `table` |
+| **Plot / graph / dashboard panel / data viz (matplotlib, Grafana, Tableau)** | **`chart`** |
+| **Handwritten notes / math equations / whiteboard scribbles** | **`handwriting`** |
 | Blurry / dark / compressed | `lowquality` |
 | Pure text extraction, no analysis | `ocr` |
 | Nothing fits | `general` |
@@ -195,6 +202,29 @@ Complex tasks need **one vision call to gather, then your own reasoning to act.*
 - **UI regression**: `describe_image` (scene=ui) → diff against intended design (read the code) → propose changes → optionally `compare_images` of before/after after the fix.
 - **Game balancing from a frame**: `describe_image` (scene=game) → extract HP/energy/score numbers → plug into formulas yourself.
 - **Reading code from a screenshot before editing**: `extract_text` is enough → reconstruct in context → find the file in the project → edit the file directly.
+- **Reading data off a chart/dashboard**: `describe_image` (scene=chart) → get axis labels, tick values, series, trends → run the analysis yourself; never ask the vision model "what does this trend mean".
+- **Transcribing handwritten notes / math**: `describe_image` (scene=handwriting) → get verbatim text + LaTeX for equations → you do the typesetting / problem solving.
+
+### B.4a — common user personas (and the right scene for each)
+
+When you can identify the user's professional context from their phrasing, the scene + question pattern often follows directly:
+
+| User signal | Scene | Question pattern |
+|---|---|---|
+| **Game dev** circles a glitch in gameplay screenshot ("这里穿模了 / UI 错位了") | `annotated` | "Describe each circled region: position, what's there, any visible text. Note differences from surrounding area." |
+| **Game dev** sends a frame and asks about HUD numbers / enemy count / state | `game` | "Read every HUD value verbatim. Count enemies. Identify visual anomalies (clipping, missing textures shown as pink/black)." |
+| **Frontend dev** with a UI bug screenshot, red circles around the breakage | `annotated` | "Describe each annotated region: element type, current visual state, any text in or near it." |
+| **Designer** sends Figma export / paper sketch / whiteboard photo | `mockup` | "Reconstruction-grade description so I can rebuild this in <stack>." |
+| **Data analyst** sends Grafana panel / chart / Excel plot | `chart` | "List axis labels, full tick values, every series with its trend, and any annotation lines." |
+| **DevOps / SRE** sends a multi-panel dashboard | `chart` | "For each dashboard panel: title, primary number/state, color." |
+| **QA tester** sends an annotated bug repro screenshot | `annotated` | "Describe each annotation in repro order; transcribe error text verbatim." |
+| **Educator / student** sends handwritten notes or equations | `handwriting` | "Transcribe verbatim; render math as LaTeX; flag uncertain characters." |
+| **Localization worker** sends UI screenshots for translation | `ui` | "List every visible string verbatim with its UI position. Flag text inside images vs editable text." |
+| **Researcher** sends paper screenshot with chart + text | `general` (or split into `ocr` + `chart`) | "Transcribe the paragraph + describe the chart structurally." |
+| **Hardware / maker** sends circuit / schematic / oscilloscope photo | `diagram` | "List every component label, connection, and reading verbatim." |
+| **PM / business** sends competitor app screenshot for feature analysis | `ui` | "Enumerate every UI element with its position and apparent function." |
+
+If the persona doesn't match exactly, fall back to keyword-based `auto` or pick the closest scene from B.2.
 
 ### B.5 — multi-image strategy
 

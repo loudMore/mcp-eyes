@@ -1,13 +1,13 @@
 # AGENT_SETUP.md — installation playbook for AI agents
 
-> **Audience**: An AI coding agent (Claude Code / Cursor / Cline / Continue / Roo / etc.) whose user just asked to install mcp-eyes from `https://github.com/loudMore/mcp-eyes`. Follow these steps. They are designed so the user only has to provide their **vision API key** (and optionally a provider name); everything else is automated.
+> **Audience**: An AI coding agent (Claude Code / Cursor / Cline / Continue / Roo / etc.) whose user just asked to install mcp-eyes from `https://github.com/loudMore/vision-extension`. Follow these steps. They are designed so the user only has to provide their **vision API key** (and optionally a provider name); everything else is automated.
 
 ---
 
 ## TL;DR for the agent
 
 ```
-1. pip install git+https://github.com/loudMore/mcp-eyes.git
+1. pip install git+https://github.com/loudMore/vision-extension.git#subdirectory=mcp-vision-extension
 2. Ask user: "Which vision provider?" → look up in presets
 3. Ask user: "Paste your API key for <provider>"
 4. mcp-eyes config --preset <name> --api-key <key> --merge --out <client-config-path>
@@ -28,10 +28,10 @@ The four CLI subcommands (`config`, `init`, `presets`, `doctor`) exist precisely
 The package lives on GitHub, not PyPI (yet). One-liner:
 
 ```bash
-pip install git+https://github.com/loudMore/mcp-eyes.git
+pip install git+https://github.com/loudMore/vision-extension.git#subdirectory=mcp-vision-extension
 ```
 
-Optional: `pip install "mcp-eyes[resize] @ git+https://github.com/loudMore/mcp-eyes.git"` to also install Pillow (auto-resize for large images).
+Optional: `pip install "mcp-eyes[resize] @ git+https://github.com/loudMore/vision-extension.git#subdirectory=mcp-vision-extension"` to also install Pillow (auto-resize for large images).
 
 Verify: `python -m mcp_eyes --version` should print `mcp-eyes <version>`.
 

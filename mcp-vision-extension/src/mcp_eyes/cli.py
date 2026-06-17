@@ -33,7 +33,7 @@ TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
 
 **主模型{reasoning_clause}是纯文本推理模型，无法直接识别图片。**
 
-本项目通过 MCP server `eyes`（[mcp-eyes](https://github.com/loudMore/mcp-eyes)）把视觉能力外挂给主模型。当前后端配置：
+本项目通过 MCP server `eyes`（[mcp-eyes](https://github.com/loudMore/vision-extension)）把视觉能力外挂给主模型。当前后端配置：
 
 - 协议：`{protocol}`
 - 视觉模型：`{vision_model}`
@@ -68,7 +68,7 @@ TEMPLATE_EN = """## Vision via mcp-eyes
 
 **The reasoning model{reasoning_clause} is text-only and cannot see images.**
 
-This project exposes vision capability through the `eyes` MCP server ([mcp-eyes](https://github.com/loudMore/mcp-eyes)). Current backend:
+This project exposes vision capability through the `eyes` MCP server ([mcp-eyes](https://github.com/loudMore/vision-extension)). Current backend:
 
 - Protocol: `{protocol}`
 - Vision model: `{vision_model}`
