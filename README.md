@@ -54,9 +54,9 @@ pip install "mcp-eyes[resize] @ git+https://github.com/loudMore/mcp-eyes.git"
 
 Tell your coding agent:
 
-> *"Install mcp-eyes from `https://github.com/loudMore/mcp-eyes`. I want to use the `<doubao | openai | qwen | gemini | ollama | …>` provider. Here's my API key: `<KEY>`. My reasoning model is `<glm-5.2 | deepseek-v4-pro | claude-sonnet-4-5 | gpt-4o | …>`."*
+> *"Install mcp-eyes from `https://github.com/loudMore/mcp-eyes`. I want to use the `<doubao | openai | qwen | gemini | ollama | …>` provider. Here's my API key: `<KEY>`."*
 
-The agent will follow [`AGENT_SETUP.md`](AGENT_SETUP.md): install the package, write `.mcp.json`, generate the `CLAUDE.md` snippet, run `doctor` to verify. You don't write any JSON.
+That's it — you don't have to specify which reasoning model is running the agent (the agent knows itself). The agent follows [`AGENT_SETUP.md`](AGENT_SETUP.md): install the package, write `.mcp.json`, generate the `CLAUDE.md` snippet, run `doctor` to verify. You don't write any JSON.
 
 ### Manual setup (4 commands)
 
@@ -67,8 +67,8 @@ python -m mcp_eyes presets
 # 2. Generate .mcp.json (writes a server entry)
 python -m mcp_eyes config --preset doubao --api-key sk-... --merge --out .mcp.json
 
-# 3. Generate the CLAUDE.md snippet that tells YOUR reasoning model how to use mcp-eyes
-python -m mcp_eyes init --reasoning-model "glm-5.2" --lang zh --out CLAUDE.md.eyes-section
+# 3. Generate the CLAUDE.md snippet that tells future agents in this project how to call mcp-eyes
+python -m mcp_eyes init --lang zh --out CLAUDE.md.eyes-section
 
 # 4. Self-check
 python -m mcp_eyes doctor --image C:/path/to/test.png
@@ -120,16 +120,15 @@ See [`examples/`](examples/) for Cursor, Continue, Cline configs.
 
 ### One-time per-project init
 
-After wiring the server, run **once** in each project to generate a CLAUDE.md / AGENTS.md snippet that tells your text reasoning model about its new eyes:
+After wiring the server, run **once** in each project to generate a CLAUDE.md / AGENTS.md snippet so future agents working in this project know mcp-eyes is available:
 
 ```bash
-python -m mcp_eyes init \
-  --reasoning-model "glm-5.2"     `# whichever text model you use to call mcp-eyes` \
-  --lang zh                        `# zh or en` \
-  --out CLAUDE.md.eyes-section
+python -m mcp_eyes init --lang zh --out CLAUDE.md.eyes-section
 ```
 
-The output reads the configured `MCP_EYES_*` env vars, fills them in, and produces a Markdown block you paste into your project's `CLAUDE.md`. The reasoning model name (`glm-5.2`, `deepseek-v4-pro`, `claude-sonnet-4-5`, `gpt-4o`, `kimi-k2`, etc.) is YOUR text model — the one that calls `mcp-eyes` — and cannot be auto-detected. Re-run when you swap reasoning models.
+The output reads the configured `MCP_EYES_*` env vars and produces a Markdown block you paste into your project's `CLAUDE.md`. The default snippet is **model-agnostic** — it doesn't matter which text reasoning model you happen to be running, the eyes-only contract works the same for all of them.
+
+If you want the snippet to mention your specific model (cosmetic, optional), add `--reasoning-model "<your-name>"` — e.g. `glm-5.2`, `deepseek-v4-pro`, `claude-sonnet-4-5`, `gpt-4o`, `kimi-k2`. Skip it otherwise.
 
 ### Tools exposed
 
@@ -215,9 +214,9 @@ pip install "mcp-eyes[resize] @ git+https://github.com/loudMore/mcp-eyes.git"
 
 直接告诉你的 Coding Agent：
 
-> *"用 https://github.com/loudMore/mcp-eyes 这个 MCP 给你装上眼睛。视觉模型用 `<豆包 | openai | 通义 | 智谱 | ollama | …>`，API key 是 `<KEY>`，我现在跑你的主模型是 `<glm-5.2 | deepseek-v4-pro | claude-sonnet-4-5 | …>`。"*
+> *"用 https://github.com/loudMore/mcp-eyes 这个 MCP 给你装上眼睛。视觉模型用 `<豆包 | openai | 通义 | 智谱 | ollama | …>`，API key 是 `<KEY>`。"*
 
-Agent 会按 [`AGENT_SETUP.md`](AGENT_SETUP.md) 自动：装包、写 `.mcp.json`、生成 `CLAUDE.md` 片段、跑 `doctor` 自检。你不用碰任何 JSON。
+就这一句。**不用告诉它你的主模型是什么 —— agent 自己就是主模型，它知道自己是谁**。Agent 会按 [`AGENT_SETUP.md`](AGENT_SETUP.md) 自动：装包、写 `.mcp.json`、生成 `CLAUDE.md` 片段、跑 `doctor` 自检。你不用碰任何 JSON。
 
 ### 手动 4 条命令搞定
 
@@ -228,8 +227,8 @@ python -m mcp_eyes presets
 # 2. 写 .mcp.json（自动按预设填好 base_url/model）
 python -m mcp_eyes config --preset doubao --api-key ark-... --merge --out .mcp.json
 
-# 3. 生成 CLAUDE.md 片段，告诉主模型你给它装了眼睛
-python -m mcp_eyes init --reasoning-model "glm-5.2" --lang zh --out CLAUDE.md.eyes-section
+# 3. 生成 CLAUDE.md 片段（模型无关，不需要填主模型名）
+python -m mcp_eyes init --lang zh --out CLAUDE.md.eyes-section
 
 # 4. 自检
 python -m mcp_eyes doctor --image C:/路径/test.png
@@ -269,16 +268,15 @@ python -m mcp_eyes doctor --image C:/路径/test.png
 
 ### 每个项目跑一次的初始化
 
-接好 server 之后，**在每个要用 mcp-eyes 的项目里跑一次**，自动生成 CLAUDE.md / AGENTS.md 片段告诉你的文本推理模型 "你现在有眼睛了"：
+接好 server 之后，**在每个要用 mcp-eyes 的项目里跑一次**，自动生成 CLAUDE.md / AGENTS.md 片段告诉项目里跑的 agent "这里有视觉能力可用"：
 
 ```bash
-python -m mcp_eyes init \
-  --reasoning-model "glm-5.2"     `# 你用来调 mcp-eyes 的那个文本模型` \
-  --lang zh                        `# zh 或 en` \
-  --out CLAUDE.md.eyes-section
+python -m mcp_eyes init --lang zh --out CLAUDE.md.eyes-section
 ```
 
-输出会读 `MCP_EYES_*` 环境变量自动填好视觉模型/协议/base URL，然后生成一段 Markdown 粘进你项目的 `CLAUDE.md`。**推理模型名（`glm-5.2` / `deepseek-v4-pro` / `claude-sonnet-4-5` / `gpt-4o` / `kimi-k2` 等）是你的文本模型 —— 那个调用 mcp-eyes 的模型 —— 服务端无法自动检测，必须自己填**。换主模型时重跑一次即可。
+输出会读 `MCP_EYES_*` 环境变量自动填好视觉模型/协议/base URL，然后生成一段 Markdown 粘进你项目的 `CLAUDE.md`。**默认是模型无关的** —— eyes-only 协议对所有文本推理模型一视同仁，不需要告诉它你的主模型是谁。
+
+需要让片段里点名你的主模型（纯装饰，不影响功能）就加 `--reasoning-model "<名字>"`，比如 `glm-5.2` / `deepseek-v4-pro` / `claude-sonnet-4-5` / `gpt-4o` / `kimi-k2`。不需要就别加。
 
 ### 暴露的工具
 

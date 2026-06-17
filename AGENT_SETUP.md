@@ -11,14 +11,15 @@
 2. Ask user: "Which vision provider?" → look up in presets
 3. Ask user: "Paste your API key for <provider>"
 4. mcp-eyes config --preset <name> --api-key <key> --merge --out <client-config-path>
-5. Ask user: "Which reasoning model are YOU running this agent on?"
-6. mcp-eyes init --reasoning-model "<that-model>" --lang <zh|en> --out <project>/CLAUDE.md.eyes
-7. Tell user to paste the snippet into their CLAUDE.md (or do it for them if they say so)
-8. mcp-eyes doctor --image <some-test-image>      # verify
-9. Tell user to restart their MCP client so `eyes` server gets picked up
+5. mcp-eyes init --lang <zh|en> --out <project>/CLAUDE.md.eyes
+   (You ARE the reasoning model — you don't need to ask the user what model is calling.
+    Optional: pass --reasoning-model "<your-own-model-name>" if you want it shown in the doc.)
+6. Paste the snippet into the project's CLAUDE.md (top of file, under a header)
+7. mcp-eyes doctor --image <some-test-image>      # verify
+8. Tell user to restart their MCP client so `eyes` server gets picked up
 ```
 
-The four CLI subcommands (`config`, `init`, `presets`, `doctor`) exist precisely so you don't have to hand-write JSON or invent prompt strings. **Use them.**
+The four CLI subcommands (`config`, `init`, `presets`, `doctor`) exist precisely so you don't have to hand-write JSON or invent prompt strings. **Use them.** And the only thing you actually need from the user is the **vision API key** — everything else you can derive or default.
 
 ---
 
@@ -127,30 +128,21 @@ Flags worth knowing:
 
 ## Step 5 — generate the CLAUDE.md / AGENTS.md snippet
 
-**Critical**: the server cannot detect which reasoning model is calling it. The user must tell you.
-
-> **You**: "What reasoning model is running this agent? (e.g. `glm-5.2`, `deepseek-v4-pro`, `claude-sonnet-4-5`, `gpt-4o`, `kimi-k2`)"
-
-Then:
+The `init` command produces a doc block that tells future agents working in this project how to call mcp-eyes correctly. **You do not need to ask the user which reasoning model is calling mcp-eyes — you are that reasoning model**, and the default snippet is intentionally model-agnostic anyway.
 
 ```bash
-# Read the env vars you just wrote to .mcp.json so init can fill them in.
-# On Linux/macOS:
-export $(python -c "import json; d=json.load(open('.mcp.json'))['mcpServers']['eyes']['env']; [print(f'{k}={v}') for k,v in d.items()]")
-
-# Or simpler (and cross-platform): just inline them
+# Inline the env vars from the config you just wrote so init can fill them in.
 MCP_EYES_PROTOCOL=openai \
 MCP_EYES_BASE_URL="<from-config>" \
 MCP_EYES_MODEL="<from-config>" \
   python -m mcp_eyes init \
-    --reasoning-model "<USER_PROVIDED_MODEL>" \
     --lang zh \
     --out CLAUDE.md.eyes-section
 ```
 
-Then either append `CLAUDE.md.eyes-section` to the project's existing `CLAUDE.md` (or `AGENTS.md`), or — if there's no such file yet — rename it to `CLAUDE.md`.
+If you want the snippet to mention your own model name (e.g. for clarity in a single-agent project), add `--reasoning-model "<your-own-name>"` — but it's optional and changes nothing functionally.
 
-If the user has a long pre-existing `CLAUDE.md`, **don't overwrite**; insert the snippet near the top under a section header.
+Then either append `CLAUDE.md.eyes-section` to the project's existing `CLAUDE.md` (or `AGENTS.md`), or rename it if no such file exists yet. Don't overwrite a long pre-existing `CLAUDE.md` — insert under a new section header near the top.
 
 ---
 

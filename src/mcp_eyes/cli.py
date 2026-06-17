@@ -31,15 +31,15 @@ from mcp_eyes.presets import (
 
 TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
 
-**主模型 `{reasoning_model}` 是纯文本推理模型，无法直接识别图片。**
+**主模型{reasoning_clause}是纯文本推理模型，无法直接识别图片。**
 
-本项目通过 MCP server `eyes`（[mcp-eyes](https://github.com/loudMore/mcp-eyes)）把视觉能力外挂给主模型。当前配置：
+本项目通过 MCP server `eyes`（[mcp-eyes](https://github.com/loudMore/mcp-eyes)）把视觉能力外挂给主模型。当前后端配置：
 
 - 协议：`{protocol}`
 - 视觉模型：`{vision_model}`
 - API base：`{base_url}`
 
-具体值在 `.mcp.json` 的环境变量里，切换其他视觉模型只改那里、不动这份文档。换主模型后请重新跑 `python -m mcp_eyes init --reasoning-model "<新模型名>" --lang zh` 替换上面的字段。
+具体值在 `.mcp.json` 的环境变量里，切换其他视觉模型只改那里、不动这份文档。
 
 ### 三个工具
 
@@ -51,7 +51,7 @@ TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
 
 1. **遇到任何图片路径或图片 URL（.png/.jpg/.jpeg/.webp/.gif/.bmp），必须调用 mcp-eyes**，不要用 Read 工具读图（图片字节流给纯文本模型必出错）。
 2. **路径用绝对路径，正斜杠也吃**（`C:/Users/.../foo.png`）。
-3. **视觉模型已在服务端被锁成 "eyes-only"**：不会给修复建议、不会推测原因、不会反问 —— 只做客观描述和逐字转录。推理、诊断、修复方案都由主模型 `{reasoning_model}` 来做，不要让视觉模型回答 "为什么 / 怎么修 / 哪里有问题"。
+3. **视觉模型已在服务端被锁成 "eyes-only"**：不会给修复建议、不会推测原因、不会反问 —— 只做客观描述和逐字转录。推理、诊断、修复方案都由主模型来做，不要让视觉模型回答 "为什么 / 怎么修 / 哪里有问题"。
 4. **`scene` 参数怎么选**：默认 `auto` 按问题关键词识别。手动可选 `general / annotated / ui / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`。
 5. **`question` 怎么写**：问"看到什么"，别问"该怎么办"。
    - 好：「逐字转录报错堆栈，含文件路径和行号」
@@ -66,7 +66,7 @@ TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
 
 TEMPLATE_EN = """## Vision via mcp-eyes
 
-**The reasoning model `{reasoning_model}` is text-only and cannot see images.**
+**The reasoning model{reasoning_clause} is text-only and cannot see images.**
 
 This project exposes vision capability through the `eyes` MCP server ([mcp-eyes](https://github.com/loudMore/mcp-eyes)). Current backend:
 
@@ -74,7 +74,7 @@ This project exposes vision capability through the `eyes` MCP server ([mcp-eyes]
 - Vision model: `{vision_model}`
 - API base: `{base_url}`
 
-Concrete values live in `.mcp.json` env vars. Swapping the vision model is config-only; this doc stays the same. When you swap the reasoning model, re-run `python -m mcp_eyes init --reasoning-model "<new-name>" --lang en` to refresh the fields above.
+Concrete values live in `.mcp.json` env vars. Swapping the vision model is config-only; this doc stays the same.
 
 ### Tools
 
@@ -86,7 +86,7 @@ Concrete values live in `.mcp.json` env vars. Swapping the vision model is confi
 
 1. **Whenever a local image path or http(s) image URL appears (.png/.jpg/.jpeg/.webp/.gif/.bmp), call mcp-eyes.** Never use Read on image bytes — that breaks the text model.
 2. **Use absolute paths; forward slashes are fine** (`C:/Users/.../foo.png` on Windows).
-3. **The vision model is locked into eyes-only mode** server-side: no advice, no opinions, no speculation, no follow-up questions — just verbatim transcription and structured description. Reasoning, diagnosis, and fix suggestions are MY job (the reasoning model `{reasoning_model}`). Never ask the vision model "why" or "how to fix".
+3. **The vision model is locked into eyes-only mode** server-side: no advice, no opinions, no speculation, no follow-up questions — just verbatim transcription and structured description. Reasoning, diagnosis, and fix suggestions are the reasoning model's job. Never ask the vision model "why" or "how to fix".
 4. **Picking `scene`**: default `auto` keyword-detects. Override with one of `general / annotated / ui / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`.
 5. **Writing `question`**: ask what's visible, not what to do.
    - Good: "Transcribe the stack trace verbatim, including file paths and line numbers."
@@ -115,8 +115,15 @@ def _safe_print(text: str) -> None:
 
 def cmd_init(args: argparse.Namespace) -> int:
     template = TEMPLATE_ZH if args.lang == "zh" else TEMPLATE_EN
+    if args.reasoning_model:
+        if args.lang == "zh":
+            reasoning_clause = f" `{args.reasoning_model}` "
+        else:
+            reasoning_clause = f" `{args.reasoning_model}`"
+    else:
+        reasoning_clause = ""
     snippet = template.format(
-        reasoning_model=args.reasoning_model or "<your-reasoning-model>",
+        reasoning_clause=reasoning_clause,
         protocol=os.environ.get("MCP_EYES_PROTOCOL", "<not-set>"),
         vision_model=os.environ.get("MCP_EYES_MODEL", "<not-set>"),
         base_url=os.environ.get("MCP_EYES_BASE_URL", "<not-set>"),
@@ -317,7 +324,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # init
     p_init = sub.add_parser("init", help="Generate CLAUDE.md / AGENTS.md snippet for a project.")
-    p_init.add_argument("--reasoning-model", default="", help="The text reasoning model that will CALL mcp-eyes (e.g. glm-5.2, deepseek-v4-pro, claude-sonnet-4-5, gpt-4o, kimi-k2). Cannot be auto-detected; the integrator must provide it.")
+    p_init.add_argument("--reasoning-model", default="", help="Optional. The text reasoning model that calls mcp-eyes. The installing agent already knows its own model and can fill this in for a slightly more polished doc; leave blank for a model-agnostic snippet that works the same way.")
     p_init.add_argument("--lang", choices=("zh", "en"), default="zh")
     p_init.add_argument("--out", default="-", help="Output path; '-' for stdout.")
     p_init.set_defaults(func=cmd_init)
