@@ -174,33 +174,33 @@ Cache key = SHA-256(image bytes after resize) + model + full prompt. Same image 
 
 MIT.
 
-### 配套 Claude Code skills
+### 配套 Claude Code skill
 
-仓库 [`skills/`](skills/) 下两个 Claude Code skill：
+仓库 [`skills/mcp-eyes/`](skills/) 是一个综合性的 Claude Code skill，覆盖全生命周期：
 
-- **`install-mcp-eyes`** —— 安装阶段触发，按 7 步确定流程让用户只出 API key 就能装好
-- **`use-mcp-eyes`** —— 日常调用阶段触发，教主模型怎么跟视觉模型高效协作：选哪个 `scene`、`question` 怎么写才能被 eyes-only 协议接住、什么时候用 `compare_images`、什么时候**不该**调（描述已在上下文里）、答得不对怎么救
+- **安装阶段**：触发于"装 mcp-eyes / 接视觉模型 / 粘 GitHub 链接"，按 7 步确定流程让用户只出 API key 就装好
+- **日常调用**：每次要调 mcp-eyes 工具或用户发图片路径时触发，教主模型怎么跟 eyes-only 视觉模型高效协作（选哪个 `scene`、`question` 怎么写、何时用 `compare_images`、何时**不该**调、答得不对怎么救）
 
 ```bash
-cp -r skills/install-mcp-eyes skills/use-mcp-eyes ~/.claude/skills/
+cp -r skills/mcp-eyes ~/.claude/skills/
 ```
 
-装上之后从安装到日用都不需要你手动 babysit。详见 [`skills/README.md`](skills/README.md)。
+装上之后整个视觉流程都在轨道上。详见 [`skills/README.md`](skills/README.md)。
 
 ---
 
-### Companion Claude Code skills
+### Companion Claude Code skill
 
-This repo ships two [Claude Code skills](skills/) at `skills/`:
+This repo ships a single comprehensive [Claude Code skill](skills/) at `skills/mcp-eyes/` that handles the full lifecycle:
 
-- **`install-mcp-eyes`** — fires on intent to install. Walks the agent through the deterministic 7-step install playbook so the user only provides their vision API key.
-- **`use-mcp-eyes`** — fires whenever the agent is about to call mcp-eyes tools or the user sends an image path. Teaches the reasoning model how to talk to the eyes-only vision model effectively: which `scene` to pick, how to phrase `question` strings, when to batch images, when **not** to call vision (e.g. the description is already in conversation), and how to recover from "Not visible in image" responses.
+- **Install & configure**: triggered by "install mcp-eyes" / pasting the GitHub URL → walks the agent through the deterministic 7-step CLI install. User only provides the vision API key.
+- **Daily use**: triggered any time the agent is about to call mcp-eyes tools or the user sends an image path → teaches how to talk to the eyes-only vision model effectively (which `scene`, how to phrase `question`, when to batch with `compare_images`, when **not** to call vision, and how to recover from "Not visible in image" responses).
 
 ```bash
-cp -r skills/install-mcp-eyes skills/use-mcp-eyes ~/.claude/skills/
+cp -r skills/mcp-eyes ~/.claude/skills/
 ```
 
-After that, the entire vision workflow — from install to daily use — is on rails. See [`skills/README.md`](skills/README.md).
+After that, the entire vision workflow is on rails. See [`skills/README.md`](skills/README.md).
 
 ### 为什么做这个
 
