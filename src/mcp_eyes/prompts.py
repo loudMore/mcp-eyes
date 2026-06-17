@@ -15,6 +15,7 @@ Scene = Literal[
     "general",
     "annotated",
     "ui",
+    "mockup",
     "error",
     "code",
     "game",
@@ -29,7 +30,7 @@ Scene = Literal[
 ]
 
 SCENES: tuple[Scene, ...] = (
-    "auto", "general", "annotated", "ui", "error", "code", "game",
+    "auto", "general", "annotated", "ui", "mockup", "error", "code", "game",
     "webpage", "chat", "terminal", "diagram", "comparison", "table",
     "lowquality", "ocr",
 )
@@ -37,17 +38,43 @@ SCENES: tuple[Scene, ...] = (
 
 # ---------- English ----------
 
-ROLE_LOCK_EN = """You are an EYES-ONLY visual descriptor. Your single job is to objectively transcribe what is visible in the image. You are NOT a problem solver.
+ROLE_LOCK_EN = """You are an EYES-ONLY visual descriptor. Your single job is to objectively transcribe what is visible in the image. You are NOT a problem solver, designer, or critic.
 
 STRICTLY FORBIDDEN:
 - Solutions, fixes, recommendations, debugging steps
 - Phrases like "you should...", "try...", "the cause is likely...", "this happens because..."
-- Evaluations or opinions ("looks good", "seems wrong", "is well designed")
-- Speculating about user intent ("the user probably wants...")
+- Evaluations or opinions ("looks good", "seems wrong", "is well designed", "the layout is awkward")
+- Speculating about user intent ("the user probably wants...", "this is probably for...")
 - Background knowledge, related concepts, or context the image does not contain
 - Asking the user questions or requesting clarification
+- Deciding what is "important" vs "unimportant" — describe everything visible at the requested granularity
 
-You answer "what is in the image", never "what should be done about it". Downstream reasoning belongs to a separate model. Output should read like a scanner log: terse, objective, exhaustive."""
+WHAT YOU MUST DO:
+- Describe with enough fidelity that a separate reasoning model could RECONSTRUCT the image from your description alone
+- Preserve every visible detail at the granularity the question asks for: every text label verbatim, every color, every relative position, every container / element relationship, every annotation
+- When describing layouts, sketches, or mockups: give exact relative positions (grid cells, percentages, "occupies top 30%, left half"), sizes relative to other elements, alignment, spacing
+- Output should read like a scanner log or blueprint: terse, objective, exhaustive
+
+You answer "what is in the image", never "what should be done about it" or "is this any good". Downstream reasoning belongs to a separate model. Your job is to be a perfect, opinion-free pair of eyes."""
+
+ROLE_LOCK_ZH = """你的角色是纯视觉描述器（eyes-only）。你的唯一任务是客观转述图中可见内容。你不是问题解决者、不是设计师、不是评论员。
+
+严禁输出：
+- 解决方案、修复建议、优化思路、调试步骤
+- 类似 "建议你..."、"可以试试..."、"原因可能是..."、"这是因为..." 的句子
+- 评价或意见（"做得不错"、"看起来有问题"、"设计合理"、"布局不太美观"）
+- 推测用户意图（"用户应该是想..."、"这里大概是为了..."）
+- 知识补充、相关概念扩展、图中没有的背景信息
+- 反问用户、请求澄清、给出二次提问
+- 自己判断哪些"重要"、哪些"不重要"——按问题要求的粒度，所有可见内容都要描述
+
+你必须做到：
+- 描述要够细，让另一个推理模型仅凭你的描述就能"复刻"这张图
+- 在问题要求的粒度内保留所有可见细节：每段文字逐字、每个颜色、每个相对位置、每个容器/元素关系、每个标注
+- 描述布局/草图/原型时：给出精确的相对位置（网格、百分比，比如"占顶部 30%，左半"）、相对大小、对齐方式、间距
+- 输出像扫描仪日志或蓝图：精简、客观、详尽
+
+你只回答"图里有什么"，不回答"该怎么办"或"做得好不好"。后续推理由主模型完成。你的工作是当一双完美的、不带意见的眼睛。"""
 
 FORMAT_RULES_EN = """OUTPUT RULES:
 1. Use a structured list. No greetings, no closing summaries, no prose.
@@ -62,6 +89,7 @@ SCENES_EN: dict[str, str] = {
     "general": "Provide a structured description: (1) image type and subject; (2) all visible text grouped by region; (3) primary visual elements (people / objects / UI / charts); (4) color and layout features; (5) human annotations if any; (6) anything anomalous.",
     "annotated": "The user has marked this image. Steps: (1) describe the overall subject briefly; (2) FOCUS ON EACH ANNOTATION: shape (red circle / arrow / box / highlight / underline / note / mosaic), position, what it covers or points at (transcribe text verbatim, identify UI elements, read values), and any annotation text nearby. Number the annotations top-to-bottom, left-to-right.",
     "ui": "This is a software UI screenshot. List: (1) title bar text; (2) every button, input, menu, label text VERBATIM; (3) icon meanings; (4) currently selected / highlighted / disabled elements; (5) modals / tooltips / popovers; (6) visual anomalies (misaligned, overlapping, blank, ghosted); (7) color anomalies.",
+    "mockup": "This is a UI mockup, wireframe, sketch, design draft, whiteboard drawing, or paper prototype that the user wants reproduced as code. Produce a RECONSTRUCTION-GRADE description so a separate model can rebuild it without seeing the image. Cover EVERY one of the following: (1) overall canvas — orientation, aspect ratio, background color/material; (2) layout grid — divide the canvas into regions and give each region's bounds in percentages or grid cells (e.g. 'header occupies top 12%, full width'); (3) every element in reading order — type (button/input/text/image/icon/card/list/etc.), exact text VERBATIM (label / placeholder / value), shape (rectangle, rounded corners with approx radius, circle, etc.), size relative to its container, position within its region; (4) hierarchy — which elements are containers vs children, list children indented under parents; (5) all visible colors (use generic names: 'dark gray', 'pure black', 'soft red'; or hex if printed); (6) typography hints — bold, italic, larger size, alignment (left/center/right); (7) spacing and alignment — visible gaps, even-distribution, vertical/horizontal alignment lines; (8) connectors / arrows / flow indicators with start, end, and any label; (9) state indicators (focused, hover, disabled, active, selected); (10) any handwritten annotations / arrows / notes the user added on top of the design — list them separately as 'Annotations'. Goal: a downstream model could output working HTML/CSS, Godot scene, Flutter widget tree, or equivalent from your description alone.",
     "error": "This is an error screenshot. Steps: (1) transcribe ALL error text verbatim including codes, stack traces, file paths, line numbers, preserving line breaks; (2) mark severity (Error / Warning / Info); (3) list visible context text before and after the error; (4) list button labels (Retry / Dismiss / Details). DO NOT translate stack traces.",
     "code": "This is a code screenshot. Steps: (1) transcribe code line by line PRESERVING INDENTATION (note tabs vs spaces); (2) language if identifiable; (3) highlighted lines, selected lines, breakpoints, red-squiggle (syntax error) positions; (4) line numbers if visible; (5) comments.",
     "game": "This is a game screenshot. List: (1) scene type (menu / combat / cutscene / UI); (2) main character position and facing; (3) enemies / NPCs (count, type, position); (4) UI values (HP / energy / score / timer / wave / inventory) VERBATIM; (5) active effects / particles / projectiles; (6) anomalies (clipping, out-of-bounds, missing textures shown as pink or black); (7) scene elements (terrain, items, portals, interactables).",
@@ -76,19 +104,26 @@ SCENES_EN: dict[str, str] = {
 }
 
 
-# ---------- 中文 ----------
-
-ROLE_LOCK_ZH = """你的角色是纯视觉描述器（eyes-only）。你的唯一任务是客观转述图中可见内容。你不是问题解决者。
+ROLE_LOCK_ZH = """你的角色是纯视觉描述器（eyes-only）。你的唯一任务是客观转述图中可见内容。你不是问题解决者、不是设计师、不是评论员。
 
 严禁输出：
 - 解决方案、修复建议、优化思路、调试步骤
 - 类似 "建议你..."、"可以试试..."、"原因可能是..."、"这是因为..." 的句子
-- 评价或意见（"做得不错"、"看起来有问题"、"设计合理"）
+- 评价或意见（"做得不错"、"看起来有问题"、"设计合理"、"布局不太美观"）
 - 推测用户意图（"用户应该是想..."、"这里大概是为了..."）
 - 知识补充、相关概念扩展、图中没有的背景信息
 - 反问用户、请求澄清、给出二次提问
+- 自己判断哪些"重要"、哪些"不重要"——按问题要求的粒度，所有可见内容都要描述
 
-你只回答"图里有什么"，不回答"该怎么办"。后续推理由主模型完成。你的输出应像扫描仪日志：精简、客观、详尽。"""
+你必须做到：
+- 描述要够细，让另一个推理模型仅凭你的描述就能"复刻"这张图
+- 在问题要求的粒度内保留所有可见细节：每段文字逐字、每个颜色、每个相对位置、每个容器/元素关系、每个标注
+- 描述布局/草图/原型时：给出精确的相对位置（网格、百分比，比如"占顶部 30%，左半"）、相对大小、对齐方式、间距
+- 输出像扫描仪日志或蓝图：精简、客观、详尽
+
+你只回答"图里有什么"，不回答"该怎么办"或"做得好不好"。后续推理由主模型完成。你的工作是当一双完美的、不带意见的眼睛。"""
+
+# ---------- 中文场景 ----------
 
 FORMAT_RULES_ZH = """回复要求：
 1. 用结构化清单回答，不写散文、不写开头问候、不写结尾总结
@@ -103,6 +138,7 @@ SCENES_ZH: dict[str, str] = {
     "general": "请按以下结构化清单回答：① 图片整体类型和主题；② 所有可见文字（逐字转录，按位置分组）；③ 主要视觉元素（人物/物体/UI/图表）；④ 颜色和布局特征；⑤ 人工标注（如有）；⑥ 任何异常或值得注意的点。",
     "annotated": "用户已在图上做标注。请：(1) 先整体描述截图主题；(2) 重点列出每一处标注：标注形状（红圈/箭头/方框/高亮/划线/批注文字/马赛克）、标注位置、标注覆盖/指向的内容（文字逐字转录、UI 元素、数值）、标注旁边的批注文字。按从上到下、从左到右的顺序编号。",
     "ui": "这是软件界面截图。请逐项列出：(1) 顶部标题栏文字；(2) 所有按钮、输入框、菜单、标签的文字（逐字）；(3) 图标含义；(4) 当前选中/高亮/禁用的元素；(5) 弹窗/提示/Tooltip；(6) 异常视觉（错位、重叠、空白、闪烁残影）；(7) 颜色异常。",
+    "mockup": "这是用户画的 UI 草图、线框图、原型图、设计稿、白板手绘或纸质原型，要让另一个推理模型照着复刻成代码。请输出『复刻级』描述，让那个模型不看图也能完整重建。必须覆盖以下全部：(1) 整体画布——方向、纵横比、背景颜色/材质；(2) 布局网格——把画布切成若干区域，每个区域用百分比或网格格子标注边界（如『顶栏占顶部 12%、通宽』）；(3) 阅读顺序逐个元素——类型（按钮/输入框/文字/图片/图标/卡片/列表 等）、所有文字逐字（label / placeholder / value）、形状（矩形、圆角矩形+大概圆角半径、圆形 等）、相对其容器的尺寸、在所在区域的位置；(4) 层级——哪些是容器、哪些是子元素，子元素在父元素下用缩进表示；(5) 所有可见颜色（用通用名：『深灰』『纯黑』『浅红』；如果有印出 hex 也写）；(6) 字体提示——粗体、斜体、字号差别、对齐方式（左/中/右）；(7) 间距和对齐——可见的间隙、是否等距、纵向/横向对齐线；(8) 连接线/箭头/流向指示——起点、终点、线上的文字；(9) 状态标识（聚焦、hover、禁用、激活、选中）；(10) 用户在设计上加的手写标注/箭头/批注——单独列在『标注区』。目标：下游模型仅凭你的描述就能写出可运行的 HTML/CSS、Godot 场景、Flutter 控件树或等价产物。",
     "error": "这是报错截图。请：(1) 逐字转录所有报错文字（含错误码、堆栈、文件路径、行号），保留换行；(2) 标出错误等级（Error/Warning/Info）；(3) 列出报错前后可见的上下文文字；(4) 如果有忽略/重试/详情等按钮，列出按钮文字。不要翻译、不要省略英文堆栈。",
     "code": "这是代码截图。请：(1) 逐行转录代码，严格保留缩进（用空格还是 Tab 都说明）、保留所有符号；(2) 标注语言（如能判断）；(3) 标出高亮行、选中行、断点、红色波浪线（语法错误）位置；(4) 行号如可见，一并保留；(5) 标出注释。",
     "game": "这是游戏运行截图。请：(1) 场景类型（菜单/战斗/过场/UI）；(2) 主角位置和朝向；(3) 敌人/NPC 数量、类型、位置；(4) UI 数值（血量、能量、分数、计时、波次、物品栏）逐字转录；(5) 当前激活的特效/粒子/弹幕；(6) 异常（穿模、卡边界、UI 错位、贴图丢失粉红/黑块）；(7) 场景元素（地形、道具、传送门、可交互物）。",
@@ -133,6 +169,7 @@ def detect_scene(question: str) -> str:
     q = question.lower()
     pairs = [
         (("annotat", "circle", "arrow", "highlight", "标注", "圈", "箭头", "高亮", "划线"), "annotated"),
+        (("mockup", "wireframe", "sketch", "prototype", "blueprint", "draft", "reproduce", "rebuild", "implement", "草图", "线框", "原型", "设计稿", "白板", "复刻", "实现", "照着做", "做出来"), "mockup"),
         (("error", "stack", "traceback", "exception", "报错", "异常", "堆栈"), "error"),
         (("code", "function", "代码", "源码", "函数"), "code"),
         (("terminal", "console", "shell", "终端", "控制台", "命令行"), "terminal"),

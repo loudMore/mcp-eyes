@@ -52,7 +52,7 @@ TEMPLATE_ZH = """## 视觉识图 (mcp-eyes)
 1. **遇到任何图片路径或图片 URL（.png/.jpg/.jpeg/.webp/.gif/.bmp），必须调用 mcp-eyes**，不要用 Read 工具读图（图片字节流给纯文本模型必出错）。
 2. **路径用绝对路径，正斜杠也吃**（`C:/Users/.../foo.png`）。
 3. **视觉模型已在服务端被锁成 "eyes-only"**：不会给修复建议、不会推测原因、不会反问 —— 只做客观描述和逐字转录。推理、诊断、修复方案都由主模型来做，不要让视觉模型回答 "为什么 / 怎么修 / 哪里有问题"。
-4. **`scene` 参数怎么选**：默认 `auto` 按问题关键词识别。手动可选 `general / annotated / ui / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`。
+4. **`scene` 参数怎么选**：默认 `auto` 按问题关键词识别。手动可选 `general / annotated / ui / mockup / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`。
 5. **`question` 怎么写**：问"看到什么"，别问"该怎么办"。
    - 好：「逐字转录报错堆栈，含文件路径和行号」
    - 好：「图中红圈圈出的是什么？」
@@ -87,7 +87,7 @@ Concrete values live in `.mcp.json` env vars. Swapping the vision model is confi
 1. **Whenever a local image path or http(s) image URL appears (.png/.jpg/.jpeg/.webp/.gif/.bmp), call mcp-eyes.** Never use Read on image bytes — that breaks the text model.
 2. **Use absolute paths; forward slashes are fine** (`C:/Users/.../foo.png` on Windows).
 3. **The vision model is locked into eyes-only mode** server-side: no advice, no opinions, no speculation, no follow-up questions — just verbatim transcription and structured description. Reasoning, diagnosis, and fix suggestions are the reasoning model's job. Never ask the vision model "why" or "how to fix".
-4. **Picking `scene`**: default `auto` keyword-detects. Override with one of `general / annotated / ui / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`.
+4. **Picking `scene`**: default `auto` keyword-detects. Override with one of `general / annotated / ui / mockup / error / code / game / webpage / chat / terminal / diagram / comparison / table / lowquality / ocr`.
 5. **Writing `question`**: ask what's visible, not what to do.
    - Good: "Transcribe the stack trace verbatim, including file paths and line numbers."
    - Good: "What does the red-circled element show?"

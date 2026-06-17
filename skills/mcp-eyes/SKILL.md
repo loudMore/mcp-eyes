@@ -130,18 +130,35 @@ Image input arrives:
 |---|---|
 | Red circles, arrows, highlights, batch annotations | `annotated` |
 | Software UI / form / dashboard | `ui` |
+| **User's hand-drawn UI sketch / wireframe / mockup that they want reproduced as code** | **`mockup`** |
 | Error dialog, IDE/console exception, traceback | `error` |
 | Editor / GitHub / web code block | `code` |
 | Running game frame (HUD, enemies, particles) | `game` |
 | Browser page (article, doc, SO answer) | `webpage` |
 | WeChat/Discord/Slack/iMessage screenshot | `chat` |
 | Terminal / shell output | `terminal` |
-| Flowchart, architecture, wireframe, mindmap | `diagram` |
+| Flowchart, architecture, wireframe (informational, not for reproduction) | `diagram` |
 | Side-by-side or before/after | `comparison` |
 | Spreadsheet / data table | `table` |
 | Blurry / dark / compressed | `lowquality` |
 | Pure text extraction, no analysis | `ocr` |
 | Nothing fits | `general` |
+
+#### 🎯 The `mockup` scene is the high-value one
+
+When a user sends a screenshot or photo of a **UI design** (Figma, Photoshop, paper sketch, whiteboard, napkin drawing, prototyping app) and says something like *"build this in Godot"* / *"implement this in HTML/CSS"* / *"make this UI"* / *"复刻这个界面"*:
+
+- **Use `scene="mockup"`**. The vision model will produce a *reconstruction-grade* description: layout grid in percentages, every element's type/text/shape/size/position, hierarchy, all colors, typography hints, spacing, connectors, state indicators, and any handwritten annotations.
+- **Then YOU (the reasoning model) write the code** from that description alone. No need to see the image yourself.
+- Example invocation:
+  ```
+  describe_image(
+    image="C:/Users/dev/whiteboard_mockup.jpg",
+    scene="mockup",
+    question="复刻这个 UI 到 Godot Control 节点树，所有文字保留中文原文，颜色按描述就近匹配 Godot 主题"
+  )
+  ```
+- After the description comes back, generate the actual Godot scene / HTML / Flutter widget from it. **Do not** ask the vision model to write the code — it can't and won't. That part is yours.
 
 ### B.3 — writing `question` strings
 
@@ -173,6 +190,7 @@ The vision model answers **what** and **where**, not **why** and **how**.
 
 Complex tasks need **one vision call to gather, then your own reasoning to act.**
 
+- **User wants UI reproduced from a screenshot/sketch**: `describe_image` (scene=`mockup`) → write the Godot scene / HTML / Flutter / SwiftUI / React from the description alone. The mockup scene is specifically engineered to produce reconstruction-grade output. Don't ask the vision model "is this layout good" — that's banned by role lock and useless anyway. Just take the description and code it up.
 - **Debugging from a screenshot**: `describe_image` (scene=error) → match stack against codebase → propose fix. Don't call vision again to "validate".
 - **UI regression**: `describe_image` (scene=ui) → diff against intended design (read the code) → propose changes → optionally `compare_images` of before/after after the fix.
 - **Game balancing from a frame**: `describe_image` (scene=game) → extract HP/energy/score numbers → plug into formulas yourself.
