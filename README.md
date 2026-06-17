@@ -76,24 +76,33 @@ python -m mcp_eyes doctor --image C:/path/to/test.png
 
 ### Configure
 
-All config is via env vars. Three required, the rest optional.
+All config is via env vars. Three required, the rest optional with sane defaults.
 
-```bash
-# Required
-MCP_EYES_PROTOCOL=openai                                          # openai | anthropic
-MCP_EYES_BASE_URL=https://ark.cn-beijing.volces.com/api/coding/v3 # no trailing slash, no /chat/completions
-MCP_EYES_API_KEY=sk-...
-MCP_EYES_MODEL=doubao-seed-2.0-pro
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `MCP_EYES_PROTOCOL` | ✓ | — | `openai` or `anthropic`. See [Choosing a protocol](#choosing-a-protocol). |
+| `MCP_EYES_BASE_URL` | ✓ | — | API endpoint, no trailing slash, no `/chat/completions` or `/messages` suffix. |
+| `MCP_EYES_API_KEY` | ✓ | — | Provider API key. |
+| `MCP_EYES_MODEL` | ✓ | — | Vision model identifier (e.g. `doubao-seed-2.0-pro`, `gpt-4o-mini`). |
+| `MCP_EYES_LANG` | | `auto` | `auto` / `en` / `zh`. `auto` detects from the question text. |
+| `MCP_EYES_MAX_IMAGE_DIM` | | `2048` | Auto-resize longest edge to this many px (Pillow required). `0` disables. |
+| `MCP_EYES_MAX_TOKENS` | | `1536` | Vision model `max_tokens`. |
+| `MCP_EYES_TEMPERATURE` | | `0.2` | Sampling temperature. Lower = more deterministic transcription. |
+| `MCP_EYES_TIMEOUT` | | `90` | HTTP timeout, seconds. |
+| `MCP_EYES_CACHE_ENABLED` | | `true` | Disk cache for (image-hash + prompt + model). |
+| `MCP_EYES_CACHE_DIR` | | `~/.cache/mcp-eyes` | Cache location. |
+| `MCP_EYES_ANTHROPIC_VERSION` | | `2023-06-01` | Anthropic protocol only. The `anthropic-version` header value. |
 
-# Optional
-MCP_EYES_LANG=auto              # auto | en | zh   (auto detects from question text)
-MCP_EYES_MAX_IMAGE_DIM=2048     # auto-resize longest edge (Pillow required); 0 = off
-MCP_EYES_MAX_TOKENS=1536
-MCP_EYES_TEMPERATURE=0.2
-MCP_EYES_TIMEOUT=90
-MCP_EYES_CACHE_ENABLED=true
-MCP_EYES_CACHE_DIR=~/.cache/mcp-eyes
-```
+You can also use `python -m mcp_eyes config` (see above) to generate `.mcp.json` so you never hand-write any of these.
+
+### Choosing a protocol
+
+mcp-eyes speaks two HTTP protocols. Pick whichever the provider you want to use exposes.
+
+- **`openai`** — uses `/chat/completions` with `image_url` parts. **Use this for almost everything**: OpenAI, Volcano Ark `/api/coding/v3`, Gemini OpenAI mode, Qwen DashScope, Zhipu, SiliconFlow, OpenRouter, Moonshot, DeepSeek, Ollama, vLLM, LiteLLM proxies, OneAPI, etc. ~95% of vision endpoints in the wild.
+- **`anthropic`** — uses `/messages` with `image` parts whose `source.type=base64`. Use this for Anthropic native, Volcano Ark `/api/coding`, AWS Bedrock proxies that speak Anthropic, or any gateway documented as "Anthropic-compatible".
+
+If you're using a preset, the protocol is already set correctly. If you're configuring a custom endpoint and aren't sure: read the provider's "Quickstart" — if their example calls `/chat/completions`, pick `openai`; if it calls `/messages`, pick `anthropic`.
 
 ### Wire into Claude Code
 
@@ -165,9 +174,27 @@ Cache key = SHA-256(image bytes after resize) + model + full prompt. Same image 
 
 MIT.
 
+### 配套 Claude Code skill
+
+仓库里 [`skills/install-mcp-eyes/`](skills/) 是一个 Claude Code skill，把整个安装流程压成一句话触发：
+
+```bash
+cp -r skills/install-mcp-eyes ~/.claude/skills/
+```
+
+装上之后，在任何项目里说"装个 mcp-eyes"/"给你装个眼睛"/"接一下视觉模型"，agent 都会自动按确定性流程跑完装包→写 `.mcp.json`→生成 CLAUDE.md→`doctor` 自检，不会瞎写 JSON、不会漏步骤。详见 [`skills/README.md`](skills/README.md)。
+
 ---
 
-## 中文
+### Companion Claude Code skill
+
+This repo ships a [Claude Code skill](skills/) at `skills/install-mcp-eyes/` that turns the install flow into a single sentence:
+
+```bash
+cp -r skills/install-mcp-eyes ~/.claude/skills/
+```
+
+After that, anything like *"install mcp-eyes"* / *"give you vision"* / *"set up the eyes server"* in any project triggers the deterministic install playbook — no JSON typos, no missed steps. See [`skills/README.md`](skills/README.md).
 
 ### 为什么做这个
 
@@ -236,7 +263,33 @@ python -m mcp_eyes doctor --image C:/路径/test.png
 
 ### 配置
 
-全部走环境变量。三个必填，其他可选。详见 `.env.example`。
+全部走环境变量。三个必填，其他可选并都有合理默认值。
+
+| 变量 | 必填 | 默认值 | 说明 |
+|---|---|---|---|
+| `MCP_EYES_PROTOCOL` | ✓ | — | `openai` 或 `anthropic`，见下文 [选哪个协议](#选哪个协议) |
+| `MCP_EYES_BASE_URL` | ✓ | — | API 端点，**不带**结尾斜杠，**不要**带 `/chat/completions` 或 `/messages` 后缀 |
+| `MCP_EYES_API_KEY` | ✓ | — | 视觉模型的 API key |
+| `MCP_EYES_MODEL` | ✓ | — | 视觉模型 ID（如 `doubao-seed-2.0-pro`、`gpt-4o-mini`）|
+| `MCP_EYES_LANG` |  | `auto` | `auto` / `en` / `zh`，`auto` 按 question 文本自动判断 |
+| `MCP_EYES_MAX_IMAGE_DIM` |  | `2048` | 自动把长边缩到这么多像素（需 Pillow），`0` 关闭 |
+| `MCP_EYES_MAX_TOKENS` |  | `1536` | 视觉模型 `max_tokens` |
+| `MCP_EYES_TEMPERATURE` |  | `0.2` | 采样温度，越低转录越稳 |
+| `MCP_EYES_TIMEOUT` |  | `90` | HTTP 超时（秒）|
+| `MCP_EYES_CACHE_ENABLED` |  | `true` | 本地磁盘缓存（图 hash + prompt + 模型）|
+| `MCP_EYES_CACHE_DIR` |  | `~/.cache/mcp-eyes` | 缓存目录 |
+| `MCP_EYES_ANTHROPIC_VERSION` |  | `2023-06-01` | 仅 anthropic 协议用，发到 `anthropic-version` header |
+
+也可以直接用 `python -m mcp_eyes config`（见上面）让 CLI 自动生成 `.mcp.json`，不用自己填这些。
+
+### 选哪个协议
+
+mcp-eyes 走两种 HTTP 协议，选你的视觉服务支持的那一个。
+
+- **`openai`** —— 走 `/chat/completions`，图片用 `image_url` 字段。**绝大多数情况都选这个**：OpenAI、火山 Ark `/api/coding/v3`、Gemini OpenAI 模式、通义 DashScope、智谱、硅基流动、OpenRouter、Moonshot/Kimi、DeepSeek、Ollama、vLLM、LiteLLM 代理、OneAPI 等等，覆盖野外 ~95% 的视觉端点。
+- **`anthropic`** —— 走 `/messages`，图片用 `image` + `source.type=base64`。Anthropic 原生、火山 Ark `/api/coding`、AWS Bedrock 的 Anthropic 兼容代理、或者任何写明 "Anthropic-compatible" 的网关用这个。
+
+用 preset 的话协议已经设好了。自己配端点不确定时：看厂商的 Quickstart，例子里调的是 `/chat/completions` 就选 `openai`，调的是 `/messages` 就选 `anthropic`。
 
 ### 接入 Claude Code
 
