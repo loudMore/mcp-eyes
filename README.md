@@ -41,16 +41,37 @@ If your provider exposes `/v1/chat/completions` or Anthropic `/v1/messages`, it 
 ### Install
 
 ```bash
-git clone https://github.com/your-org/mcp-eyes.git
-cd mcp-eyes
-pip install -e .[resize]   # [resize] adds Pillow for auto-downscaling large images
+pip install git+https://github.com/loudMore/mcp-eyes.git
 ```
 
-Or run without installing:
+Or with auto-resize for large images:
 
 ```bash
-pip install httpx Pillow
-python -m mcp_eyes
+pip install "mcp-eyes[resize] @ git+https://github.com/loudMore/mcp-eyes.git"
+```
+
+### Quick setup (have your AI agent do it for you)
+
+Tell your coding agent:
+
+> *"Install mcp-eyes from `https://github.com/loudMore/mcp-eyes`. I want to use the `<doubao | openai | qwen | gemini | ollama | …>` provider. Here's my API key: `<KEY>`. My reasoning model is `<glm-5.2 | deepseek-v4-pro | claude-sonnet-4-5 | gpt-4o | …>`."*
+
+The agent will follow [`AGENT_SETUP.md`](AGENT_SETUP.md): install the package, write `.mcp.json`, generate the `CLAUDE.md` snippet, run `doctor` to verify. You don't write any JSON.
+
+### Manual setup (4 commands)
+
+```bash
+# 1. List supported providers
+python -m mcp_eyes presets
+
+# 2. Generate .mcp.json (writes a server entry)
+python -m mcp_eyes config --preset doubao --api-key sk-... --merge --out .mcp.json
+
+# 3. Generate the CLAUDE.md snippet that tells YOUR reasoning model how to use mcp-eyes
+python -m mcp_eyes init --reasoning-model "glm-5.2" --lang zh --out CLAUDE.md.eyes-section
+
+# 4. Self-check
+python -m mcp_eyes doctor --image C:/path/to/test.png
 ```
 
 ### Configure
@@ -181,16 +202,37 @@ MIT.
 ### 安装
 
 ```bash
-git clone https://github.com/your-org/mcp-eyes.git
-cd mcp-eyes
-pip install -e .[resize]   # [resize] 装 Pillow，大图自动缩放
+pip install git+https://github.com/loudMore/mcp-eyes.git
 ```
 
-不装包直接跑：
+带自动缩图：
 
 ```bash
-pip install httpx Pillow
-python -m mcp_eyes
+pip install "mcp-eyes[resize] @ git+https://github.com/loudMore/mcp-eyes.git"
+```
+
+### 让你的 agent 帮你装好（推荐）
+
+直接告诉你的 Coding Agent：
+
+> *"用 https://github.com/loudMore/mcp-eyes 这个 MCP 给你装上眼睛。视觉模型用 `<豆包 | openai | 通义 | 智谱 | ollama | …>`，API key 是 `<KEY>`，我现在跑你的主模型是 `<glm-5.2 | deepseek-v4-pro | claude-sonnet-4-5 | …>`。"*
+
+Agent 会按 [`AGENT_SETUP.md`](AGENT_SETUP.md) 自动：装包、写 `.mcp.json`、生成 `CLAUDE.md` 片段、跑 `doctor` 自检。你不用碰任何 JSON。
+
+### 手动 4 条命令搞定
+
+```bash
+# 1. 看支持哪些 provider
+python -m mcp_eyes presets
+
+# 2. 写 .mcp.json（自动按预设填好 base_url/model）
+python -m mcp_eyes config --preset doubao --api-key ark-... --merge --out .mcp.json
+
+# 3. 生成 CLAUDE.md 片段，告诉主模型你给它装了眼睛
+python -m mcp_eyes init --reasoning-model "glm-5.2" --lang zh --out CLAUDE.md.eyes-section
+
+# 4. 自检
+python -m mcp_eyes doctor --image C:/路径/test.png
 ```
 
 ### 配置
