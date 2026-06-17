@@ -174,27 +174,33 @@ Cache key = SHA-256(image bytes after resize) + model + full prompt. Same image 
 
 MIT.
 
-### 配套 Claude Code skill
+### 配套 Claude Code skills
 
-仓库里 [`skills/install-mcp-eyes/`](skills/) 是一个 Claude Code skill，把整个安装流程压成一句话触发：
+仓库 [`skills/`](skills/) 下两个 Claude Code skill：
+
+- **`install-mcp-eyes`** —— 安装阶段触发，按 7 步确定流程让用户只出 API key 就能装好
+- **`use-mcp-eyes`** —— 日常调用阶段触发，教主模型怎么跟视觉模型高效协作：选哪个 `scene`、`question` 怎么写才能被 eyes-only 协议接住、什么时候用 `compare_images`、什么时候**不该**调（描述已在上下文里）、答得不对怎么救
 
 ```bash
-cp -r skills/install-mcp-eyes ~/.claude/skills/
+cp -r skills/install-mcp-eyes skills/use-mcp-eyes ~/.claude/skills/
 ```
 
-装上之后，在任何项目里说"装个 mcp-eyes"/"给你装个眼睛"/"接一下视觉模型"，agent 都会自动按确定性流程跑完装包→写 `.mcp.json`→生成 CLAUDE.md→`doctor` 自检，不会瞎写 JSON、不会漏步骤。详见 [`skills/README.md`](skills/README.md)。
+装上之后从安装到日用都不需要你手动 babysit。详见 [`skills/README.md`](skills/README.md)。
 
 ---
 
-### Companion Claude Code skill
+### Companion Claude Code skills
 
-This repo ships a [Claude Code skill](skills/) at `skills/install-mcp-eyes/` that turns the install flow into a single sentence:
+This repo ships two [Claude Code skills](skills/) at `skills/`:
+
+- **`install-mcp-eyes`** — fires on intent to install. Walks the agent through the deterministic 7-step install playbook so the user only provides their vision API key.
+- **`use-mcp-eyes`** — fires whenever the agent is about to call mcp-eyes tools or the user sends an image path. Teaches the reasoning model how to talk to the eyes-only vision model effectively: which `scene` to pick, how to phrase `question` strings, when to batch images, when **not** to call vision (e.g. the description is already in conversation), and how to recover from "Not visible in image" responses.
 
 ```bash
-cp -r skills/install-mcp-eyes ~/.claude/skills/
+cp -r skills/install-mcp-eyes skills/use-mcp-eyes ~/.claude/skills/
 ```
 
-After that, anything like *"install mcp-eyes"* / *"give you vision"* / *"set up the eyes server"* in any project triggers the deterministic install playbook — no JSON typos, no missed steps. See [`skills/README.md`](skills/README.md).
+After that, the entire vision workflow — from install to daily use — is on rails. See [`skills/README.md`](skills/README.md).
 
 ### 为什么做这个
 
